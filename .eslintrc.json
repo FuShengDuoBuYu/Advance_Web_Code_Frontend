@@ -1,0 +1,69 @@
+{
+  "root": true,
+  "ignorePatterns": [
+    "projects/**/*"
+  ],
+  "overrides": [
+    {
+      "files": [
+        "*.ts"
+      ],
+      "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:@angular-eslint/recommended",
+        "plugin:@angular-eslint/template/process-inline-templates"
+      ],
+      "rules": {
+        "@angular-eslint/directive-selector": [
+          "error",
+          {
+            "type": "attribute",
+            "prefix": "app",
+            "style": "camelCase"
+          }
+        ],
+        "@angular-eslint/component-selector": [
+          "error",
+          {
+            "type": "element",
+            "prefix": "app",
+            "style": "kebab-case"
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "*.html"
+      ],
+      "extends": [
+        "plugin:@angular-eslint/template/recommended"
+      ],
+      "rules": {
+        //禁用var，用let和const代替
+        "no-var": "error",
+        //驼峰命名
+        "camelcase": "error",
+        //必须全等
+        "eqeqeq": "error",
+        //字符串必须用单引号
+        "quotes": [
+          "error",
+          "single"
+        ],
+        //禁止在return、throw、continue和break语句之后出现不可达代码
+        "no-unreachable": "error",
+        //语句强制分号结尾
+        "semi": [
+          "error",
+          "always"
+        ],
+        //禁止出现未使用过的变量
+        "no-unused-vars": "error",
+        //禁止出现多个空格
+        "no-multi-spaces": "error"
+      }
+    }
+  ]
+}

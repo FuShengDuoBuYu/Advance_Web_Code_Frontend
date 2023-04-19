@@ -1,3 +1,4 @@
+@@ -1,37 +0,0 @@
 ## 第一次开会2023/04/19
 
 ### ddl与安排
@@ -35,3 +36,20 @@
 ### 学习
 
 https://www.bilibili.com/video/BV1th411J7zo/?spm_id_from=333.337.search-card.all.click&vd_source=1068ea6e2b9d5d54342d2f2dfc0faa0f
+
+---
+
+## 前端内容
+
+请保证每次commit提交前完成如下内容:
+``` shell
+# 检查代码格式
+npm run lint-fix
+# 检查代码是否有错误
+npm run test
+```
+
+运行项目
+``` shell
+npm run start
+```

@@ -1,0 +1,35 @@
+<div class="container">
+  <h1 class="title">欢迎来到在线教育平台!</h1>
+  <div class="auth-container">
+    <mat-tab-group class="mat-tab-group">
+      <mat-tab label="登录" class="mat-tab-label">
+        <form [formGroup]="loginForm" (ngSubmit)="onLoginSubmit()">        
+          <mat-form-field appearance="fill" class="mat-form-field">
+            <mat-label>邮箱</mat-label>
+            <input matInput formControlName="email">
+          </mat-form-field>
+        
+          <mat-form-field appearance="fill" class="mat-form-field">
+            <mat-label>密码</mat-label>
+            <input matInput formControlName="password" type="password">
+          </mat-form-field>
+          <button mat-raised-button color="primary" type="submit" class="button">登录</button>
+        </form>
+      </mat-tab>
+      <mat-tab label="注册">
+        <form [formGroup]="registrationForm" (ngSubmit)="onRegisterSubmit()">        
+          <mat-form-field appearance="fill" class="mat-form-field">
+            <mat-label>邮箱</mat-label>
+            <input matInput formControlName="email">
+          </mat-form-field>
+        
+          <mat-form-field appearance="fill" class="mat-form-field">
+            <mat-label>密码</mat-label>
+            <input matInput formControlName="password" type="password">
+          </mat-form-field>
+          <button mat-raised-button color="primary" type="submit" class="button">注册</button>
+        </form>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</div>

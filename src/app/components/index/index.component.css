@@ -1,0 +1,46 @@
+.auth-container {
+  max-width: 50%;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.mat-tab-group {
+  border: none;
+}
+
+.mat-tab-label {
+  font-size: 18px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.mat-tab-body-content {
+  padding: 20px;
+}
+
+.mat-form-field {
+  width: 95%;
+}
+
+.mat-form-field-label {
+  color: #333;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.mat-input-element {
+  font-size: 16px;
+}
+
+.button{
+  display: flex;
+  margin: auto;
+}
+
+.title{
+  text-align: center;
+  margin-top: 10%;
+}

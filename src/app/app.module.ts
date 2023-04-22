@@ -20,6 +20,7 @@ import { IndexComponent } from './components/index/index.component';
 import { NotfoundComponent } from './components/notfound/notfound.component';
 import { PersonalCenterComponent } from './components/personal-center/personal-center.component';
 import { HomeComponent } from './components/home/home.component';
+import { SelectPlayerComponent } from './components/select-player/select-player.component';
 
 @NgModule({
   declarations: [
@@ -28,6 +29,7 @@ import { HomeComponent } from './components/home/home.component';
     NotfoundComponent,
     PersonalCenterComponent,
     HomeComponent,
+    SelectPlayerComponent,
   ],
   imports: [
     BrowserModule,

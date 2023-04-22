@@ -4,6 +4,7 @@ import { IndexComponent } from './components/index/index.component';
 import { NotfoundComponent } from './components/notfound/notfound.component';
 import { PersonalCenterComponent } from './components/personal-center/personal-center.component';
 import { HomeComponent } from './components/home/home.component';
+import { SelectPlayerComponent } from './components/select-player/select-player.component';
 
 const routes: Routes = [
   {
@@ -19,10 +20,14 @@ const routes: Routes = [
     component: PersonalCenterComponent
   },
   {
+    path: 'select',
+    component: SelectPlayerComponent
+  },
+  {
     path:'**',
     component: NotfoundComponent
-  },
-  
+  }
+
 ];
 
 @NgModule({

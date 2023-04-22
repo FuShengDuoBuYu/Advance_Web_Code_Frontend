@@ -11,10 +11,11 @@ export class HomeComponent {
   ngAfterViewInit() {
     const canvas = this.canvasEl.nativeElement;
     const context = canvas.getContext('2d');
-  
+
     //绘制一个矩形,黑色
     context.fillStyle = 'black';
     context.fillRect(0, 0, canvas.width, canvas.height);
+    console.log(window.localStorage.getItem('playerIndex'));
   }
 
   navigateToPersonalCenter() {

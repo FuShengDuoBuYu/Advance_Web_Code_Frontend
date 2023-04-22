@@ -1,6 +1,9 @@
 import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import * as THREE from 'three';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
+import {animate} from "@angular/animations";
+import {Object3D} from "three";
+import {OrbitControls} from "three-orbitcontrols-ts";
 @Component({
   selector: 'app-select-player',
   templateUrl: './select-player.component.html',
@@ -16,21 +19,13 @@ export class SelectPlayerComponent implements OnInit {
   private scene:THREE.Scene = new THREE.Scene();
   private currentPlayerName:string = 'LiLa';
   private camera:THREE.PerspectiveCamera = new THREE.PerspectiveCamera(45, this.width / this.height, 0.1, 1000);
+  private player:Object3D = new THREE.Object3D();
+  private clock:THREE.Clock = new THREE.Clock();
+  private mixer:THREE.AnimationMixer = new THREE.AnimationMixer(this.player);
+  private controls:OrbitControls = new OrbitControls(this.camera, this.renderer.domElement);
+  private playerIndex:number = 0;
   //各个模型的url
-
   public players = [
-    {
-      "name": "Lila",
-      "url": "assets/source/Lila.FBX",
-      "description": "A 3D model of a female character, no specific profession or role mentioned.",
-      "image": "assets/images/SimplePeople_Lila_Brown.png"
-    },
-    {
-      "name": "BeachBabe",
-      "url": "assets/fbx/people/BeachBabe.fbx",
-      "description": "A 3D model of a young woman wearing a bikini, likely intended for beach or summer-themed visualizations.",
-      "image": "assets/images/SimplePeople_BeachBabe_Brown.png"
-    },
     {
       "name": "BusinessMan",
       "url": "assets/fbx/people/BusinessMan.fbx",
@@ -80,12 +75,6 @@ export class SelectPlayerComponent implements OnInit {
       "image": "assets/images/SimplePeople_RiotCop_Brown.png"
     },
     {
-      "name": "RoadWorker",
-      "url": "assets/fbx/people/RoadWorker.fbx",
-      "description": "A 3D model of a male road worker in safety gear, likely intended for construction or infrastructure-related visualizations.",
-      "image": "assets/images/SimplePeople_Roadworker_Brown.png"
-    },
-    {
       "name": "Robber",
       "url": "assets/fbx/people/Robber.fbx",
       "description": "A 3D model of a male criminal in a black ski mask, likely intended for crime or heist simulation visualizations.",
@@ -132,23 +121,19 @@ export class SelectPlayerComponent implements OnInit {
     this.camera.position.y = 0;
     this.camera.position.z = 100;
     this.camera.lookAt(this.scene.position)
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls.enableDamping = true; // optional
+    this.controls.dampingFactor = 0.25; // optional
+    this.controls.minDistance = 10; // optional
+    this.controls.maxDistance = 500; // optional
 
-    //导入fbx模型
-    const loader = new FBXLoader();
-    loader.load('assets/source/Lila.FBX', (object:THREE.Object3D) => {
-        console.log(object);
-        object.scale.set(0.5, 0.5, 0.5);
-        object.name=this.currentPlayerName;
-        this.scene.add(object);
-        //渲染
-        this.renderer.render(this.scene, this.camera)
-    }
-    );
+    this.renderPlayer(0);
   }
 
   //渲染模型
   renderPlayer(playerIndex:number){
     //清除sence之前的Object
+    this.playerIndex = playerIndex;
     let obj:any = this.scene.getObjectByName(this.currentPlayerName);
     this.scene.remove(obj);
 
@@ -157,8 +142,11 @@ export class SelectPlayerComponent implements OnInit {
     loader.load(this.players[playerIndex].url, (object:THREE.Object3D) => {
         this.currentPlayerName = this.players[playerIndex].name;
         object.name=this.currentPlayerName;
-        object.scale.set(0.1, 0.1, 0.1);
-        
+        this.player = object;
+        this.mixer = new THREE.AnimationMixer(object);
+        this.mixer.clipAction(object.animations[0]).play();
+        object.scale.set(0.2, 0.2, 0.2);
+        object.position.set(0, -25, 0);
         object.traverse((child) => {
           if (child instanceof THREE.Mesh) {
               const textureLoader = new THREE.TextureLoader();
@@ -166,7 +154,7 @@ export class SelectPlayerComponent implements OnInit {
                 (texture) => {
                   const material = new THREE.MeshBasicMaterial({ map: texture });
                   child.material = material;
-                  this.renderer.render(this.scene, this.camera)
+                  // this.renderer.render(this.scene, this.camera)
               },
               // 加载失败的回调函数
               (xhr) => {
@@ -176,12 +164,11 @@ export class SelectPlayerComponent implements OnInit {
               child.material = material; // 将材质应用于子网格对象
           }
         });
-
         this.scene.add(object);
         //渲染
-        this.renderer.render(this.scene, this.camera)
-    }
-    );
+        // this.renderer.render(this.scene, this.camera)
+    });
+    this.animation();
   }
 
   selectPlayer(playerIndex:number) {
@@ -191,6 +178,14 @@ export class SelectPlayerComponent implements OnInit {
   // 用户确定选中角色
   comfirmPlayer() {
     window.localStorage.setItem('player', this.currentPlayerName);
+    window.localStorage.setItem('playerIndex', this.playerIndex.toString());
     window.location.href = '/home';
+  }
+
+  animation() {
+    const dt = this.clock.getDelta();
+    requestAnimationFrame(this.animation.bind(this));
+    if (this.mixer!==undefined) this.mixer.update(dt);
+    this.renderer.render(this.scene, this.camera);
   }
 }

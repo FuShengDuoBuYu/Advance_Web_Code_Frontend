@@ -11,9 +11,10 @@ export class SelectPlayerComponent implements OnInit {
 
   @ViewChild('virtual_player') three:ElementRef = new ElementRef(null);
   private renderer:any = new THREE.WebGLRenderer();
-  private width = 500;
-  private height = 500;
+  private width = window.innerWidth*0.4;
+  private height = window.innerHeight * 0.9;
   private scene:THREE.Scene = new THREE.Scene();
+  private currentPlayerName:string = 'LiLa';
   private camera:THREE.PerspectiveCamera = new THREE.PerspectiveCamera(45, this.width / this.height, 0.1, 1000);
   //各个模型的url
 
@@ -56,7 +57,7 @@ export class SelectPlayerComponent implements OnInit {
     },
     {
       "name": "PoliceMan",
-      "url": "assets/fbx/people/PoliceMan.fbx",
+      "url": "assets/fbx/people/Policeman.fbx",
       "description": "A 3D model of a male police officer in uniform, likely intended for law enforcement or crime simulation visualizations.",
       "image": "assets/images/SimplePeople_Policeman_Brown.png"
     },
@@ -115,7 +116,6 @@ export class SelectPlayerComponent implements OnInit {
   }
 
   ngAfterViewInit() {
-    console.log(this.three);
 
     //创建背景
     this.renderer.setSize(this.width, this.height);
@@ -128,16 +128,17 @@ export class SelectPlayerComponent implements OnInit {
     this.camera = new THREE.PerspectiveCamera(45, this.width / this.height, 0.1, 1000)
 
     //设置摄像机的位置，并对准场景中心
-    this.camera.position.x = 10
-    this.camera.position.y = 10
-    this.camera.position.z = 30
+    this.camera.position.x = 0;
+    this.camera.position.y = 0;
+    this.camera.position.z = 100;
     this.camera.lookAt(this.scene.position)
 
     //导入fbx模型
     const loader = new FBXLoader();
     loader.load('assets/source/Lila.FBX', (object:THREE.Object3D) => {
         console.log(object);
-        object.scale.set(0.1, 0.1, 0.1);
+        object.scale.set(0.5, 0.5, 0.5);
+        object.name=this.currentPlayerName;
         this.scene.add(object);
         //渲染
         this.renderer.render(this.scene, this.camera)
@@ -147,27 +148,32 @@ export class SelectPlayerComponent implements OnInit {
 
   //渲染模型
   renderPlayer(playerIndex:number){
-    //清除场景所有模型
-    this.scene.children.forEach((child) => {
-      if (child instanceof THREE.Mesh) {
-        this.scene.remove(child);
-      }
-    });
-  
-    //导入fbx模型
+    //清除sence之前的Object
+    let obj:any = this.scene.getObjectByName(this.currentPlayerName);
+    this.scene.remove(obj);
+
+    //导入fbx模型并贴图
     const loader = new FBXLoader();
     loader.load(this.players[playerIndex].url, (object:THREE.Object3D) => {
-        console.log(object);
-        object.scale.set(0.05, 0.05, 0.05);
-        //贴图
-        const textureLoader = new THREE.TextureLoader();
-        console.log(this.players[playerIndex].image);
-        const texture = textureLoader.load(this.players[playerIndex].image);
-        const material = new THREE.MeshBasicMaterial({map: texture});
-        console.log(material);
+        this.currentPlayerName = this.players[playerIndex].name;
+        object.name=this.currentPlayerName;
+        object.scale.set(0.1, 0.1, 0.1);
+        
         object.traverse((child) => {
           if (child instanceof THREE.Mesh) {
-            child.material = material;
+              const textureLoader = new THREE.TextureLoader();
+              const texture = textureLoader.load(this.players[playerIndex].image,
+                (texture) => {
+                  const material = new THREE.MeshBasicMaterial({ map: texture });
+                  child.material = material;
+                  this.renderer.render(this.scene, this.camera)
+              },
+              // 加载失败的回调函数
+              (xhr) => {
+                  console.error("Texture loading error:", xhr);
+              });
+              const material = new THREE.MeshBasicMaterial({map: texture});
+              child.material = material; // 将材质应用于子网格对象
           }
         });
 
@@ -179,7 +185,12 @@ export class SelectPlayerComponent implements OnInit {
   }
 
   selectPlayer(playerIndex:number) {
-    // console.log(playerName);
     this.renderPlayer(playerIndex);
+  }
+
+  // 用户确定选中角色
+  comfirmPlayer() {
+    window.localStorage.setItem('player', this.currentPlayerName);
+    window.location.href = '/home';
   }
 }

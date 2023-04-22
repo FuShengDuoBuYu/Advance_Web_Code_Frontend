@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-
+import {MatDialog} from '@angular/material/dialog';
 
 @Component({
   selector: 'app-index',
@@ -12,7 +12,7 @@ export class IndexComponent {
   registrationForm!: FormGroup;
   loginForm!: FormGroup;
 
-  constructor(private formBuilder: FormBuilder) {
+  constructor(private formBuilder: FormBuilder, public dialog: MatDialog) {
     this.registrationForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
@@ -23,6 +23,7 @@ export class IndexComponent {
       password: ['', [Validators.required, Validators.minLength(6)]],
     });
   }
+
 
   onRegisterSubmit() {
     if (this.registrationForm.valid) {
@@ -39,5 +40,5 @@ export class IndexComponent {
       window.location.href = '/home';
     }
   }
-
 }
+

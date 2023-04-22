@@ -7,11 +7,11 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { FormsModule,ReactiveFormsModule } from '@angular/forms';
-// toolbars
 import { MatToolbarModule } from '@angular/material/toolbar';
-// mat-icon
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatCardModule } from '@angular/material/card';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -44,6 +44,8 @@ import { SelectPlayerComponent } from './components/select-player/select-player.
     MatToolbarModule,
     MatIconModule,
     MatTooltipModule,
+    MatDialogModule,
+    MatCardModule
     
   ],
   providers: [],

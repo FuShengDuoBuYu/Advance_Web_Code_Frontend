@@ -1,3 +1,20 @@
-<div class="content" style="text-align: center">
-  <div #Three class="main"></div>
+<div style="height: 100%;width: 100%;">
+  <mat-toolbar color="primary" class="toolbar">
+    <span>选择虚拟角色</span>
+  </mat-toolbar>
+  <div class="content">
+    <div class="card_view">
+      <mat-card class="card" *ngFor="let player of players;let i = index" (click)="selectPlayer(i)">
+        <mat-card-header>
+          <mat-card-title>{{player.name}}</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p>描述: {{player.description}}</p>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    <div class="virtual_player">
+      <div #virtual_player></div>
+    </div>
+  </div>
 </div>

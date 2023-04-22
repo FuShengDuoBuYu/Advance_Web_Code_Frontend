@@ -20,7 +20,7 @@ const routes: Routes = [
     component: PersonalCenterComponent
   },
   {
-    path: 'select',
+    path: 'selectPlayer',
     component: SelectPlayerComponent
   },
   {

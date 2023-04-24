@@ -100,7 +100,7 @@ class Platform {
     //加载模型
     const loader = new FBXLoader();
     const platform = this;
-    loader.load(`assets/fbx/people/FireFighter.fbx`, function (object) {
+    loader.load(`assets/fbx/people/`+localStorage.getItem('roleName')+`.fbx`, function (object) {
       object.mixer = new THREE.AnimationMixer(object);
       platform.player.mixer = object.mixer;
       platform.player.root = object.mixer.getRoot();
@@ -114,7 +114,7 @@ class Platform {
         }
       });
       //贴图纹理
-      const texture = new THREE.TextureLoader().load(`assets/images/SimplePeople_FireFighter_White.png`, (texture) => {
+      const texture = new THREE.TextureLoader().load(`assets/images/SimplePeople_`+localStorage.getItem('roleName')+`_Brown.png`, (texture) => {
         object.traverse(function (child) {
           if (child.isMesh) {
             child.material.map = texture;
@@ -184,7 +184,7 @@ class Platform {
   }
 
   loadNextAnim(loader) {
-    let anim = this.anims.pop();
+    const anim = this.anims.pop();
     const platform = this;
     loader.load(`assets/fbx/anims/${anim}.fbx`, function (object) {
       platform.animations[anim] = object.animations[0];
@@ -307,7 +307,7 @@ class Platform {
       const tloader = new THREE.CubeTextureLoader();
 			tloader.setPath( `assets/images/` );
 
-			let textureCube = tloader.load( [
+			const textureCube = tloader.load( [
 				'px.jpg', 'nx.jpg',
 				'py.jpg', 'ny.jpg',
 				'pz.jpg', 'nz.jpg'
@@ -347,8 +347,8 @@ class JoyStick{
 	}
 	
 	getMousePosition(evt){
-		let clientX = evt.targetTouches ? evt.targetTouches[0].pageX : evt.clientX;
-		let clientY = evt.targetTouches ? evt.targetTouches[0].pageY : evt.clientY;
+		const clientX = evt.targetTouches ? evt.targetTouches[0].pageX : evt.clientX;
+		const clientY = evt.targetTouches ? evt.targetTouches[0].pageY : evt.clientY;
 		return { x:clientX, y:clientY };
 	}
 	

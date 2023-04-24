@@ -1,10 +1,11 @@
 <div style="height: 100%;width: 100%;">
   <mat-toolbar color="primary" class="toolbar">
     <span>选择虚拟角色</span>
+    <span>您已经选择了  {{players[playerIndex].name}}</span>
     <button mat-raised-button color="accent" (click)="comfirmPlayer()">确定</button>
   </mat-toolbar>
   <div class="content">
-    <div class="card_view">
+    <div class="card_view" id="cardView">
       <mat-card class="card" *ngFor="let player of players;let i = index" (click)="selectPlayer(i)">
         <mat-card-header>
           <mat-card-title>{{player.name}}</mat-card-title>

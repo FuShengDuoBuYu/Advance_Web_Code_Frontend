@@ -26,7 +26,6 @@
     "rxjs": "~7.8.0",
     "socket.io": "^4.6.1",
     "three": "^0.151.3",
-    "three-orbitcontrols-ts": "^0.1.2",
     "three.js": "^0.77.1",
     "tslib": "^2.3.0",
     "zone.js": "~0.12.0"

@@ -8,6 +8,12 @@ import { SelectPlayerComponent } from './components/select-player/select-player.
 
 const routes: Routes = [
   {
+    path: '',
+    //重定向到index
+    component: IndexComponent
+  }
+  ,
+  {
     path: 'index',
     component: IndexComponent
   },

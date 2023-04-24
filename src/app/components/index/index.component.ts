@@ -37,7 +37,7 @@ export class IndexComponent {
       //todo: login to server
       console.log(this.loginForm.value);
       // 重定向到home
-      window.location.href = '/home';
+      window.location.href = '/selectPlayer';
     }
   }
 }

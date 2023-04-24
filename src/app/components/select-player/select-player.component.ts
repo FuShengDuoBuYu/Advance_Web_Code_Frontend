@@ -17,13 +17,13 @@ export class SelectPlayerComponent implements OnInit {
   private width = window.innerWidth*0.4;
   private height = window.innerHeight * 0.9;
   private scene:THREE.Scene = new THREE.Scene();
-  private currentPlayerName:string = 'LiLa';
+  private currentPlayerName = 'LiLa';
   private camera:THREE.PerspectiveCamera = new THREE.PerspectiveCamera(45, this.width / this.height, 0.1, 1000);
   private player:Object3D = new THREE.Object3D();
   private clock:THREE.Clock = new THREE.Clock();
   private mixer:THREE.AnimationMixer = new THREE.AnimationMixer(this.player);
   private controls:OrbitControls = new OrbitControls(this.camera, this.renderer.domElement);
-  private playerIndex:number = 0;
+  public playerIndex = 0;
   //各个模型的url
   public players = [
     {
@@ -45,13 +45,13 @@ export class SelectPlayerComponent implements OnInit {
       "image": "assets/images/SimplePeople_FireFighter_Brown.png"
     },
     {
-      "name": "Housewife",
+      "name": "HouseWife",
       "url": "assets/fbx/people/Housewife.fbx",
       "description": "A 3D model of a female character, likely intended for domestic or household-themed visualizations.",
       "image": "assets/images/SimplePeople_HouseWife_Brown.png"
     },
     {
-      "name": "PoliceMan",
+      "name": "Policeman",
       "url": "assets/fbx/people/Policeman.fbx",
       "description": "A 3D model of a male police officer in uniform, likely intended for law enforcement or crime simulation visualizations.",
       "image": "assets/images/SimplePeople_Policeman_Brown.png"
@@ -87,7 +87,7 @@ export class SelectPlayerComponent implements OnInit {
       "image": "assets/images/SimplePeople_Sheriff_Brown.png"
     },
     {
-      "name": "Streetman",
+      "name": "StreetMan",
       "url": "assets/fbx/people/Streetman.fbx",
       "description": "A 3D model of a male character dressed in streetwear, no specific profession or role mentioned.",
       "image": "assets/images/SimplePeople_StreetMan_Brown.png"
@@ -105,7 +105,16 @@ export class SelectPlayerComponent implements OnInit {
   }
 
   ngAfterViewInit() {
-
+    //找到localStorage中的playerIndex
+    if(localStorage.getItem('roleName')){
+      this.playerIndex = this.players.findIndex((item) => {
+        return item.name === localStorage.getItem('roleName');
+      })
+    }
+    else{
+      this.playerIndex = 0;
+    }
+    this.setCardStyle(this.playerIndex);
     //创建背景
     this.renderer.setSize(this.width, this.height);
     this.renderer.setClearColor(0xFFFFFF);
@@ -127,14 +136,14 @@ export class SelectPlayerComponent implements OnInit {
     this.controls.minDistance = 10; // optional
     this.controls.maxDistance = 500; // optional
 
-    this.renderPlayer(0);
+    this.renderPlayer(this.playerIndex);
   }
 
   //渲染模型
   renderPlayer(playerIndex:number){
     //清除sence之前的Object
     this.playerIndex = playerIndex;
-    let obj:any = this.scene.getObjectByName(this.currentPlayerName);
+    const obj:any = this.scene.getObjectByName(this.currentPlayerName);
     this.scene.remove(obj);
 
     //导入fbx模型并贴图
@@ -172,13 +181,31 @@ export class SelectPlayerComponent implements OnInit {
   }
 
   selectPlayer(playerIndex:number) {
+    this.setCardStyle(playerIndex);
     this.renderPlayer(playerIndex);
+  }
+
+  //设置当前选中的card样式
+  setCardStyle(playerIndex:number) {
+    const cardView = document.getElementById('cardView');
+    // 设置选中的那个card背景为红色
+    //@ts-ignore
+    for (let i = 0; i < cardView.children.length; i++) {
+      if (i === playerIndex) {
+        //@ts-ignore
+        cardView.children[i].style.backgroundColor = '#c5cae9';
+      } else {
+        //@ts-ignore
+        cardView.children[i].style.backgroundColor = 'white';
+      }
+    } 
   }
 
   // 用户确定选中角色
   comfirmPlayer() {
-    window.localStorage.setItem('player', this.currentPlayerName);
-    window.localStorage.setItem('playerIndex', this.playerIndex.toString());
+    // 保存用户选择的角色
+    localStorage.setItem('roleName', this.currentPlayerName);
+    
     window.location.href = '/home';
   }
 

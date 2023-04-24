@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import {Object3D} from "three";
 export type SelectPlayer = {
   mixer: THREE.AnimationMixer;
   root: THREE.Object3D;
@@ -7,12 +6,12 @@ export type SelectPlayer = {
 }
 
 export type modes = {
-  NONE: Symbol;
-  PRELOAD: Symbol;
-  INITIALISING:  Symbol;
-  CREATING_LEVEL: Symbol;
-  ACTIVE: Symbol;
-  GAMEOVER: Symbol;
+  NONE: symbol;
+  PRELOAD: symbol;
+  INITIALISING:  symbol;
+  CREATING_LEVEL: symbol;
+  ACTIVE: symbol;
+  GAMEOVER: symbol;
 }
 
 export type Animations = {

@@ -1,7 +1,6 @@
 
 ## 前端内容
 
-**请保证每次commit提交前完成如下内容:**
 ``` shell
 # 检查代码格式
 npm run lint-fix

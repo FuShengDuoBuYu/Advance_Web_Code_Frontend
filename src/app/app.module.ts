@@ -21,6 +21,7 @@ import { NotfoundComponent } from './components/notfound/notfound.component';
 import { PersonalCenterComponent } from './components/personal-center/personal-center.component';
 import { HomeComponent } from './components/home/home.component';
 import { SelectPlayerComponent } from './components/select-player/select-player.component';
+import { ClassroomComponent } from './components/classroom/classroom.component';
 
 @NgModule({
   declarations: [
@@ -30,6 +31,7 @@ import { SelectPlayerComponent } from './components/select-player/select-player.
     PersonalCenterComponent,
     HomeComponent,
     SelectPlayerComponent,
+    ClassroomComponent,
   ],
   imports: [
     BrowserModule,

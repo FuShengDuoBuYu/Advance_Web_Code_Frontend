@@ -12,6 +12,8 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 // mat-icon
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+// sidenav
+import {MatSidenavModule} from '@angular/material/sidenav';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -20,6 +22,15 @@ import { IndexComponent } from './components/index/index.component';
 import { NotfoundComponent } from './components/notfound/notfound.component';
 import { PersonalCenterComponent } from './components/personal-center/personal-center.component';
 import { HomeComponent } from './components/home/home.component';
+// http
+import {HttpClientModule,HttpClientJsonpModule,HTTP_INTERCEPTORS} from '@angular/common/http';
+
+import { NgxEchartsModule } from 'ngx-echarts';
+import * as echarts from 'echarts';
+
+import { InterceptorInterceptor } from './interceptor.interceptor';
+
+
 
 @NgModule({
   declarations: [
@@ -42,9 +53,15 @@ import { HomeComponent } from './components/home/home.component';
     MatToolbarModule,
     MatIconModule,
     MatTooltipModule,
-    
+    HttpClientModule,
+    HttpClientJsonpModule,
+    MatSidenavModule,
+    NgxEchartsModule,
+
   ],
-  providers: [],
+  providers: [
+    { provide: HTTP_INTERCEPTORS, useClass: InterceptorInterceptor, multi: true }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

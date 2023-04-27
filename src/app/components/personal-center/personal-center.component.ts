@@ -9,7 +9,8 @@ import {FormBuilder, Validators} from "@angular/forms";
   styleUrls: ['./personal-center.component.css']
 })
 export class PersonalCenterComponent implements OnInit {
-  constructor(public http:HttpClient) {}
+  constructor(public http:HttpClient) {
+  }
 
   ngOnInit() {
     let lineData;

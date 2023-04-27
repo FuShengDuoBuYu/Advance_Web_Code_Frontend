@@ -69,8 +69,10 @@ import { MatSelectModule } from '@angular/material/select';
     MatCardModule,
     MatRadioModule,
     MatListModule,
-    MatOptionModule,
+
     MatSelectModule,
+
+
     HttpClientModule,
     HttpClientJsonpModule,
     MatSidenavModule,

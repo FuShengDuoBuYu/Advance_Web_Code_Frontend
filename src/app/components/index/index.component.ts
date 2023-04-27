@@ -39,8 +39,8 @@ export class IndexComponent {
         headers: new HttpHeaders({ 'Content-Type': 'application/json' })
       };
 
-      const api = "localhost:10086/user/register";
-      this.http.post(api,this.registrationForm,httpOptions).subscribe((res:any) => {
+      const api = "http://localhost:10086/user/register";
+      this.http.post(api,this.registrationForm.value,httpOptions).subscribe((res:any) => {
         if(res.success){
           console.log(res.message);
         }
@@ -58,8 +58,8 @@ export class IndexComponent {
         headers: new HttpHeaders({ 'Content-Type': 'application/json' })
       };
 
-      const api = "localhost:10086/user/login";
-      this.http.post(api, this.registrationForm,httpOptions).subscribe((res:any) => {
+      const api = "http://localhost:10086/user/login";
+      this.http.post(api, this.registrationForm.value,httpOptions).subscribe((res:any) => {
           if(res.success){
             const storage = window.sessionStorage;
             sessionStorage.setItem("token",res.data.token);

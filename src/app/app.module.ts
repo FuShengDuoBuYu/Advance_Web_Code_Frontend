@@ -37,7 +37,6 @@ import {HttpClientModule,HttpClientJsonpModule,HTTP_INTERCEPTORS} from '@angular
 import { NgxEchartsModule } from 'ngx-echarts';
 import * as echarts from 'echarts';
 
-import { InterceptorInterceptor } from './interceptor.interceptor';
 
 
 
@@ -80,7 +79,7 @@ import { InterceptorInterceptor } from './interceptor.interceptor';
 
   ],
   providers: [
-    { provide: HTTP_INTERCEPTORS, useClass: InterceptorInterceptor, multi: true }
+
 
   ],
   bootstrap: [AppComponent]

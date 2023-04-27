@@ -1,27 +1,21 @@
 //@ts-nocheck
-import { Component, ElementRef, ViewChild } from '@angular/core';
-import { Animations, Cameras, modes, remoteData } from "../../type";
+import { Component } from '@angular/core';
 import * as THREE from 'three';
 //如果报错,那么就从如下位置安装
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
-import { JoyStick} from "./lib"
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent {
-
-
   //当页面view加载完成后，执行ngAfterViewInit方法
   ngAfterViewInit() {
     const platformDiv = document.getElementById('platform');
     const platform = new Platform(platformDiv);
-    //@ts-ignore
     window.platform = platform;
-    //@ts-ignore
-    console.log(window.platform);
+    this.playerMove(platform);
+    this.playerView(platform);
   }
 
   // 点击按钮后跳转到个人中心
@@ -29,29 +23,60 @@ export class HomeComponent {
     window.location.href = '/personalCenter';
   }
 
-  //点击按钮后修改动作
-  toggleAnimation() {
-    if (platform.action == "Idle") {
-      platform.action = "Pointing Gesture";
-    } else {
-      platform.action = "Idle";
-    }
+  //监听用户的wasd输入
+  playerMove(platform) {
+    let isMove = false;
+    document.addEventListener('keydown', (event) => {
+      if(isMove) return;
+      switch (event.keyCode) {
+        case 87: // w
+          platform.playerControl('w');
+          break;
+        //按住c后进入classroom界面
+        case 67: // c
+          window.location.href = '/classroom';
+      }
+    }, false);
+    //松手后停止
+    document.addEventListener('keyup', (event) => {
+      isMove = false;
+      platform.playerControl('stop');
+    }, false);
   }
 
-  @ViewChild('canvasEl')
-  canvasEl!: ElementRef;
-
-  ngAfterViewInit() {
-    const canvas = this.canvasEl.nativeElement;
-    const context = canvas.getContext('2d');
-
-    //绘制一个矩形,黑色
-    context.fillStyle = 'black';
-    context.fillRect(0, 0, canvas.width, canvas.height);
+  //监听用户的鼠标视角
+  playerView(platform) {
+    //监听一次鼠标移动的距离
+    let lastX = 0;
+    let lastY = 0;
+    let isMouseMove = false;
+    document.addEventListener('mousemove', (event) => {
+      if(isMouseMove) return;
+      isMouseMove = true;
+      const x = event.clientX;
+      const y = event.clientY;
+      const dx = x - lastX;
+      const dy = y - lastY;
+      lastX = x;
+      lastY = y;
+      platform.playerViewControl(dx, dy);
+      setTimeout(() => {
+        isMouseMove = false;
+      }, 100);
+    }, false);
+    //每100ms监听一次鼠标的位置
+    setInterval(() => {
+      //获取当前鼠标的位置
+      if(isMouseMove) return;
+      if(lastX<10){
+        platform.playerViewControl(-100, 0);
+      }
+      if(innerWidth-lastX<10){
+        platform.playerViewControl(100, 0);
+      }
+    }, 100);
+    
   }
-
-
-
 }
 
 
@@ -68,10 +93,12 @@ class Platform {
     this.cameras;
     this.scene;
     this.renderer;
+    this.actionAnimation;
     //初始化div
     this.container = document.createElement('div');
     this.container.style.width = '100%';
     this.container.style.height = window.innerHeight * 0.9 + 'px';
+    this.container.style.cursor = 'none';
     platformDiv.appendChild(this.container);
 
     const platform = this;
@@ -81,7 +108,6 @@ class Platform {
 
     //初始化
     this.init();
-
   }
 
   init() {
@@ -151,35 +177,24 @@ class Platform {
     });
     //加载地图
     this.loadEnvironment(loader);
-    //设置控制器
-    this.joystick = new JoyStick({
-      onMove:this.playerControl,
-      platform:this
-    })
     //设置渲染器
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(window.innerWidth, window.innerHeight * 0.9);
     this.renderer.shadowMap.enabled = true;
     this.container.appendChild(this.renderer.domElement);
-
   }
   //设置动画
   animate() {
-    const platform = this;
     const dt = this.clock.getDelta();
-
-    requestAnimationFrame(function () { platform.animate(); });
     if (this.player.mixer !== undefined) this.player.mixer.update(dt);
-    //角色从走动自动转换为跑动
-    if (this.player.action == 'Walking') {
-      const elapsedTime = Date.now() - this.player.actionTime;
-      if (elapsedTime > 1000 && this.player.move.forward > 0) {
-        this.action = 'Running';
-      }
+    if (this.player.move !== false){
+      
+      this.movePlayer(this.player.forward,dt);
     }
+    else{
 
-    if (this.player.move !== undefined) this.movePlayer(dt);
+    }
     //做一下相机的位置的线性插值
     if (this.player.cameras != undefined && this.player.cameras.active != undefined) {
       this.camera.position.lerp(this.player.cameras.active.getWorldPosition(new THREE.Vector3()), 0.05);
@@ -197,6 +212,7 @@ class Platform {
     }
 
     this.renderer.render(this.scene, this.camera);
+    requestAnimationFrame(function () { platform.animate(); });
   }
 
   loadNextAnim(loader) {
@@ -209,12 +225,7 @@ class Platform {
       }
       else {
         platform.createCameras();
-        platform.joystick = new JoyStick({
-          onMove: platform.playerControl,
-          platform: platform
-        })
         delete platform.anims;
-        platform.action = "Idle";
         platform.animate();
       }
     });
@@ -224,12 +235,12 @@ class Platform {
   set action(name) {
     //设置一个动作
     const action = this.player.mixer.clipAction(this.animations[name]);
-    action.time = 0;
+    action.time = 0.5;
+    //停止所有动作
     this.player.mixer.stopAllAction();
     this.player.action = name;
     this.player.actionTime = Date.now();
-
-    action.fadeIn(0.5);
+    action.fadeIn(0);
     action.play();
   }
 
@@ -239,30 +250,39 @@ class Platform {
     return this.player.action;
   }
 
-  //设置滑竿带来的移动控制
-  playerControl(forward, turn) {
-    turn = -turn;
-
-    if (forward > 0.3) {
-      if (this.player.action != 'Walking' && this.player.action != 'Running') this.action = 'Walking';
-    } else if (forward < -0.3) {
-      if (this.player.action != 'Walking Backwards') this.action = 'Walking Backwards';
-    } else {
-      forward = 0;
-      if (Math.abs(turn) > 0.1) {
-        if (this.player.action != 'Turn') this.action = 'Turn';
-      } else if (this.player.action != "Idle") {
-        this.action = 'Idle';
+  //设置键盘带来的移动控制
+  playerControl(forward) {
+    if(forward=='w'){
+      this.player.forward = 'w';
+      this.player.move = true;
+      if(this.actionAnimation!=='Walking'){
+        window.platform.action = 'Walking'
+        this.actionAnimation = 'Walking'
       }
     }
-
-    if (forward == 0 && turn == 0) {
-      delete this.player.move;
-    }
-    else {
-      this.player.move = { forward, turn };
+    if(forward=='stop'){
+      this.player.forward = 'stop';
+      this.player.move = false;
+      if(this.actionAnimation!=='Idle'){
+        window.platform.action = 'Idle'
+        this.actionAnimation = 'Idle'
+      }
     }
   }
+
+  //设置鼠标带来的视角控制
+  playerViewControl(dx,dy){
+    dy = -dy;
+    dx = -dx;
+    this.player.object.rotation.y += dx * 0.002;
+    this.player.object.rotation.y = Math.max(-Math.PI, Math.min(Math.PI, this.player.object.rotation.y));
+
+    this.camera.rotation.x += dy * 0.002;
+    this.camera.rotation.x = Math.max(-Math.PI, Math.min(Math.PI, this.camera.rotation.x));
+  }
+    
+
+
   //设置相机
   set activeCamera(object) {
     this.player.cameras.active = object;
@@ -285,6 +305,7 @@ class Platform {
     const collect = new THREE.Object3D();
     collect.position.set(40, 82, 94);
     collect.parent = this.player.object;
+        
     //设置相机,是用户的各个视角
     this.player.cameras = { front, back, wide, overhead, collect };
     //默认的相机是back
@@ -292,14 +313,19 @@ class Platform {
   }
 
   //移动角色
-  movePlayer(dt) {
-    if (this.player.move.forward > 0) {
-      const speed = (this.player.action == 'Running') ? 400 : 150;
-      this.player.object.translateZ(dt * speed);
-    } else {
-      this.player.object.translateZ(-dt * 30);
+  movePlayer(direction,dt) {
+    if(direction=='w'){
+      this.player.object.translateZ(dt*400);
     }
-    this.player.object.rotateY(this.player.move.turn * dt);
+    if(direction=='s'){
+      this.player.object.translateZ(-dt*400);
+    }
+    if(direction=='a'){
+      this.player.object.translateX(dt*400);
+    }
+    if(direction=='d'){
+      this.player.object.translateX(-dt*400);
+    }
   }
 
   //加载环境地图
@@ -330,96 +356,8 @@ class Platform {
 			] );
 
 			platform.scene.background = textureCube;
-
+			
 			platform.loadNextAnim(loader);
     });
   }
-}
-
-class JoyStick{
-	constructor(options){
-		const circle = document.createElement("div");
-		circle.style.cssText = "position:absolute; bottom:35px; width:80px; height:80px; background:rgba(126, 126, 126, 0.5); border:#444 solid medium; border-radius:50%; left:50%; transform:translateX(-50%);";
-		const thumb = document.createElement("div");
-		thumb.style.cssText = "position: absolute; left: 20px; top: 20px; width: 40px; height: 40px; border-radius: 50%; background: #fff;";
-		circle.appendChild(thumb);
-		document.body.appendChild(circle);
-		this.domElement = thumb;
-		this.maxRadius = options.maxRadius || 40;
-		this.maxRadiusSquared = this.maxRadius * this.maxRadius;
-		this.onMove = options.onMove;
-		this.platform = options.platform;
-		this.origin = { left:this.domElement.offsetLeft, top:this.domElement.offsetTop };
-		this.rotationDamping = options.rotationDamping || 0.06;
-		this.moveDamping = options.moveDamping || 0.01;
-		if (this.domElement!=undefined){
-			const joystick = this;
-			if ('ontouchstart' in window){
-				this.domElement.addEventListener('touchstart', function(evt){ evt.preventDefault(); joystick.tap(evt); evt.stopPropagation();});
-			}else{
-				this.domElement.addEventListener('mousedown', function(evt){ evt.preventDefault(); joystick.tap(evt); evt.stopPropagation();});
-			}
-		}
-	}
-
-	getMousePosition(evt){
-		const clientX = evt.targetTouches ? evt.targetTouches[0].pageX : evt.clientX;
-		const clientY = evt.targetTouches ? evt.targetTouches[0].pageY : evt.clientY;
-		return { x:clientX, y:clientY };
-	}
-
-	tap(evt){
-		evt = evt || window.event;
-		// get the mouse cursor position at startup:
-		this.offset = this.getMousePosition(evt);
-		const joystick = this;
-		if ('ontouchstart' in window){
-			document.ontouchmove = function(evt){ evt.preventDefault(); joystick.move(evt); };
-			document.ontouchend =  function(evt){ evt.preventDefault(); joystick.up(evt); };
-		}else{
-			document.onmousemove = function(evt){ evt.preventDefault(); joystick.move(evt); };
-			document.onmouseup = function(evt){ evt.preventDefault(); joystick.up(evt); };
-		}
-	}
-
-	move(evt){
-		evt = evt || window.event;
-		const mouse = this.getMousePosition(evt);
-		// calculate the new cursor position:
-		let left = mouse.x - this.offset.x;
-		let top = mouse.y - this.offset.y;
-		//this.offset = mouse;
-
-		const sqMag = left*left + top*top;
-		if (sqMag>this.maxRadiusSquared){
-			//Only use sqrt if essential
-			const magnitude = Math.sqrt(sqMag);
-			left /= magnitude;
-			top /= magnitude;
-			left *= this.maxRadius;
-			top *= this.maxRadius;
-		}
-		// set the element's new position:
-		this.domElement.style.top = `${top + this.domElement.clientHeight/2}px`;
-		this.domElement.style.left = `${left + this.domElement.clientWidth/2}px`;
-
-		const forward = -(top - this.origin.top + this.domElement.clientHeight/2)/this.maxRadius;
-		const turn = (left - this.origin.left + this.domElement.clientWidth/2)/this.maxRadius;
-
-		if (this.onMove!=undefined) this.onMove.call(this.platform, forward, turn);
-	}
-
-	up(evt){
-		if ('ontouchstart' in window){
-			document.ontouchmove = null;
-			document.touchend = null;
-		}else{
-			document.onmousemove = null;
-			document.onmouseup = null;
-		}
-		this.domElement.style.top = `${this.origin.top}px`;
-		this.domElement.style.left = `${this.origin.left}px`;
-
-		this.onMove.call(this.platform, 0, 0);
-	}
 }

@@ -16,7 +16,7 @@ export class InterceptorInterceptor /*implements HttpInterceptor*/ {
 
   }
 
-  /*intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<any>> {
+  intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<any>> {
       let req: any;
       console.log(request.url);
       if (request.url !== 'http://localhost:4200/index') {
@@ -43,5 +43,5 @@ export class InterceptorInterceptor /*implements HttpInterceptor*/ {
     );
 
 
-  }*/
+  }
 }

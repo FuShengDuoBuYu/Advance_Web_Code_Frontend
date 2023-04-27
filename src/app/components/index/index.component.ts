@@ -19,13 +19,13 @@ export class IndexComponent {
 
   constructor(private formBuilder: FormBuilder, public dialog: MatDialog,public http:HttpClient) {
     this.registrationForm = this.formBuilder.group({
-      email: ['', [Validators.required, Validators.email]],
+      username: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       role: ['', [Validators.required]],
     });
 
     this.loginForm = this.formBuilder.group({
-      email: ['', [Validators.required, Validators.email]],
+      username: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
     });
 
@@ -59,7 +59,7 @@ export class IndexComponent {
       };
 
       const api = "localhost:10086/user/login";
-      this.http.post(api,this.loginForm,httpOptions).subscribe((res:any) => {
+      this.http.post(api, this.registrationForm,httpOptions).subscribe((res:any) => {
           if(res.success){
             const storage = window.sessionStorage;
             sessionStorage.setItem("token",res.data.token);

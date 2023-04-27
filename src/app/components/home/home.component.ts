@@ -12,6 +12,7 @@ import { JoyStick} from "./lib"
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent {
+<<<<<<< HEAD
 
   //当页面view加载完成后，执行ngAfterViewInit方法
   ngAfterViewInit() {
@@ -36,6 +37,24 @@ export class HomeComponent {
       platform.action = "Idle";
     }
   }
+=======
+  @ViewChild('canvasEl')
+  canvasEl!: ElementRef;
+
+  ngAfterViewInit() {
+    const canvas = this.canvasEl.nativeElement;
+    const context = canvas.getContext('2d');
+
+    //绘制一个矩形,黑色
+    context.fillStyle = 'black';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+    navigateToPersonalCenter() {
+      window.location.href = '/personalCenter';
+    }
+
+>>>>>>> front_test
 }
 
 

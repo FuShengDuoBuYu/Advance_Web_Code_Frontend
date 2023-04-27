@@ -20,6 +20,7 @@ export class IndexComponent {
     this.registrationForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
+      role: ['', [Validators.required, Validators.minLength(1)]],
     });
 
     this.loginForm = this.formBuilder.group({
@@ -37,7 +38,7 @@ export class IndexComponent {
         headers: new HttpHeaders({ 'Content-Type': 'application/json' })
       };
 
-      const api = "/user/register";
+      const api = "localhost:10086/user/register";
       this.http.post(api,this.registrationForm,httpOptions).subscribe((res:any) => {
         if(res.success){
           console.log(res.message);
@@ -56,7 +57,7 @@ export class IndexComponent {
         headers: new HttpHeaders({ 'Content-Type': 'application/json' })
       };
 
-      const api = "/user/login";
+      const api = "localhost:10086/user/login";
       this.http.post(api,this.loginForm,httpOptions).subscribe((res:any) => {
           if(res.success){
             const storage = window.sessionStorage;

@@ -12,7 +12,7 @@ import { JoyStick} from "./lib"
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent {
-<<<<<<< HEAD
+
 
   //当页面view加载完成后，执行ngAfterViewInit方法
   ngAfterViewInit() {
@@ -37,7 +37,7 @@ export class HomeComponent {
       platform.action = "Idle";
     }
   }
-=======
+
   @ViewChild('canvasEl')
   canvasEl!: ElementRef;
 
@@ -50,11 +50,8 @@ export class HomeComponent {
     context.fillRect(0, 0, canvas.width, canvas.height);
   }
 
-    navigateToPersonalCenter() {
-      window.location.href = '/personalCenter';
-    }
 
->>>>>>> front_test
+
 }
 
 
@@ -165,7 +162,7 @@ class Platform {
     this.renderer.setSize(window.innerWidth, window.innerHeight * 0.9);
     this.renderer.shadowMap.enabled = true;
     this.container.appendChild(this.renderer.domElement);
-    
+
   }
   //设置动画
   animate() {
@@ -261,7 +258,7 @@ class Platform {
 
     if (forward == 0 && turn == 0) {
       delete this.player.move;
-    } 
+    }
     else {
       this.player.move = { forward, turn };
     }
@@ -333,7 +330,7 @@ class Platform {
 			] );
 
 			platform.scene.background = textureCube;
-			
+
 			platform.loadNextAnim(loader);
     });
   }
@@ -364,13 +361,13 @@ class JoyStick{
 			}
 		}
 	}
-	
+
 	getMousePosition(evt){
 		const clientX = evt.targetTouches ? evt.targetTouches[0].pageX : evt.clientX;
 		const clientY = evt.targetTouches ? evt.targetTouches[0].pageY : evt.clientY;
 		return { x:clientX, y:clientY };
 	}
-	
+
 	tap(evt){
 		evt = evt || window.event;
 		// get the mouse cursor position at startup:
@@ -384,7 +381,7 @@ class JoyStick{
 			document.onmouseup = function(evt){ evt.preventDefault(); joystick.up(evt); };
 		}
 	}
-	
+
 	move(evt){
 		evt = evt || window.event;
 		const mouse = this.getMousePosition(evt);
@@ -392,7 +389,7 @@ class JoyStick{
 		let left = mouse.x - this.offset.x;
 		let top = mouse.y - this.offset.y;
 		//this.offset = mouse;
-		
+
 		const sqMag = left*left + top*top;
 		if (sqMag>this.maxRadiusSquared){
 			//Only use sqrt if essential
@@ -405,13 +402,13 @@ class JoyStick{
 		// set the element's new position:
 		this.domElement.style.top = `${top + this.domElement.clientHeight/2}px`;
 		this.domElement.style.left = `${left + this.domElement.clientWidth/2}px`;
-		
+
 		const forward = -(top - this.origin.top + this.domElement.clientHeight/2)/this.maxRadius;
 		const turn = (left - this.origin.left + this.domElement.clientWidth/2)/this.maxRadius;
-		
+
 		if (this.onMove!=undefined) this.onMove.call(this.platform, forward, turn);
 	}
-	
+
 	up(evt){
 		if ('ontouchstart' in window){
 			document.ontouchmove = null;
@@ -422,7 +419,7 @@ class JoyStick{
 		}
 		this.domElement.style.top = `${this.origin.top}px`;
 		this.domElement.style.left = `${this.origin.left}px`;
-		
+
 		this.onMove.call(this.platform, 0, 0);
 	}
 }

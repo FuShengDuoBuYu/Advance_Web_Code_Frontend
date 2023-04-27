@@ -22,14 +22,19 @@
             <mat-label>邮箱</mat-label>
             <input matInput formControlName="email">
           </mat-form-field>
-
           <mat-form-field appearance="fill" class="mat-form-field">
             <mat-label>密码</mat-label>
             <input matInput formControlName="password" type="password">
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="mat-form-field">
+            <mat-label>角色</mat-label>
+            <input matInput formControlName="role" min="0" max="1" step="1" type="number">
+<!-- 有问题  <input type="radio" formControlName="role" value="0" checked="true">学生
+            <input type="radio" formControlName="role" value="1" >老师-->
           </mat-form-field>
           <button mat-raised-button color="primary" type="submit" class="button">注册</button>
         </form>
       </mat-tab>
     </mat-tab-group>
-  </div>  
+  </div>
 </div>

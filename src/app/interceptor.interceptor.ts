@@ -10,13 +10,13 @@ import {
 import {Observable, tap} from 'rxjs';
 
 @Injectable()
-export class InterceptorInterceptor implements HttpInterceptor {
+export class InterceptorInterceptor /*implements HttpInterceptor*/ {
 
   constructor(private router: Router) {
 
   }
 
-  intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<any>> {
+  /*intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<any>> {
       let req: any;
       console.log(request.url);
       if (request.url !== 'http://localhost:4200/index') {
@@ -43,5 +43,5 @@ export class InterceptorInterceptor implements HttpInterceptor {
     );
 
 
-  }
+  }*/
 }

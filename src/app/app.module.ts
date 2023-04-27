@@ -10,10 +10,11 @@ import { FormsModule,ReactiveFormsModule } from '@angular/forms';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import {MatListModule} from '@angular/material/list';
 
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatCardModule } from '@angular/material/card';
-
+import {MatRadioModule} from '@angular/material/radio';
 // sidenav
 import {MatSidenavModule} from '@angular/material/sidenav';
 
@@ -65,6 +66,8 @@ import { InterceptorInterceptor } from './interceptor.interceptor';
     MatTooltipModule,
     MatDialogModule,
     MatCardModule,
+    MatRadioModule,
+    MatListModule,
 
     HttpClientModule,
     HttpClientJsonpModule,

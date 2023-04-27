@@ -28,9 +28,11 @@
           </mat-form-field>
           <mat-form-field appearance="fill" class="mat-form-field">
             <mat-label>角色</mat-label>
-            <input matInput formControlName="role" min="0" max="1" step="1" type="number">
-<!-- 有问题  <input type="radio" formControlName="role" value="0" checked="true">学生
-            <input type="radio" formControlName="role" value="1" >老师-->
+<!--            <mat-radio-group aria-label="Select a character">
+              <mat-radio-button name="role" formControlName="role" value="1">学生</mat-radio-button>
+              <mat-radio-button name="role" formControlName="role" value="0">老师</mat-radio-button>
+            </mat-radio-group>              好像不行-->
+           <input matInput formControlName="role" min="0" max="1" step="1" type="number">
           </mat-form-field>
           <button mat-raised-button color="primary" type="submit" class="button">注册</button>
         </form>

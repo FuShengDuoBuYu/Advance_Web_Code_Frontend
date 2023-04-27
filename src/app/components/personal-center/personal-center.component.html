@@ -14,11 +14,35 @@
 </mat-toolbar>
 </p>
 
+<mat-drawer-container class="example-container">
+<mat-drawer mode="side" opened>
+<!--  <mat-nav-list>
+    <a mat-list-item href="..." *ngFor="let link of links" [activated]="link.isActive">原神</a>
+  </mat-nav-list>
+  <mat-nav-list>
+    <a mat-list-item href="..." *ngFor="let link of links" [activated]="link.isActive">王者荣耀</a>
+  </mat-nav-list>-->
+  <mat-list>
+    <mat-list-item href="...">学习习惯</mat-list-item>
+    <mat-list-item>账户信息</mat-list-item>
+    <mat-list-item>个人信息</mat-list-item>
+    <mat-list-item>个人主页</mat-list-item>
+  </mat-list>
+</mat-drawer>
+<mat-drawer-content>
 
-<div id="line" style=" width: 800px;height:400px;color: blue;"></div>
-<div id="pie" style=" width: 800px;height:400px;color: blue;"></div>
-<div id="radar" style=" width: 800px;height:400px;color: blue;"></div>
-<div id="bar" style=" width: 800px;height:400px;color: blue;"></div>
+  <div>
+    <div id="line" style=" width: 800px;height:400px;color: blue;"></div>
+    <div id="pie" style=" width: 800px;height:400px;color: blue;"></div>
+    <div id="radar" style=" width: 800px;height:400px;color: blue;"></div>
+    <div id="bar" style=" width: 800px;height:400px;color: blue;"></div>
+  </div>
+
+</mat-drawer-content>
+</mat-drawer-container>
+
+
+
 <!--<mat-sidenav-container class="center-container" *ngIf="shouldRun">
 <mat-sidenav mode="side" opened>Sidenav content</mat-sidenav>
 <mat-sidenav-content>1</mat-sidenav-content>

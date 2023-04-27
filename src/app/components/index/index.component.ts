@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import {MatRadioModule} from '@angular/material/radio';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import {MatDialog} from '@angular/material/dialog';
 import {HttpClient,HttpHeaders} from "@angular/common/http";
@@ -20,7 +21,7 @@ export class IndexComponent {
     this.registrationForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      role: ['', [Validators.required, Validators.minLength(1)]],
+      role: ['', [Validators.required]],
     });
 
     this.loginForm = this.formBuilder.group({

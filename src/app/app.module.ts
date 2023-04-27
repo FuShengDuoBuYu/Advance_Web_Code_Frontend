@@ -35,8 +35,9 @@ import {HttpClientModule,HttpClientJsonpModule,HTTP_INTERCEPTORS} from '@angular
 
 import { NgxEchartsModule } from 'ngx-echarts';
 import * as echarts from 'echarts';
+import { MatOptionModule } from '@angular/material/core';
+import { MatSelectModule } from '@angular/material/select';
 
-import { InterceptorInterceptor } from './interceptor.interceptor';
 
 
 
@@ -68,7 +69,8 @@ import { InterceptorInterceptor } from './interceptor.interceptor';
     MatCardModule,
     MatRadioModule,
     MatListModule,
-
+    MatOptionModule,
+    MatSelectModule,
     HttpClientModule,
     HttpClientJsonpModule,
     MatSidenavModule,
@@ -76,9 +78,12 @@ import { InterceptorInterceptor } from './interceptor.interceptor';
 
   ],
   providers: [
-    { provide: HTTP_INTERCEPTORS, useClass: InterceptorInterceptor, multi: true }
 
   ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
+export const environment = {
+  production: false,
+  apiPrefix: 'http://localhost:10086'
+};

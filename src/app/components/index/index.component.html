@@ -5,7 +5,8 @@
       <mat-tab label="登录" class="mat-tab-label">
         <form [formGroup]="loginForm" (ngSubmit)="onLoginSubmit()">
           <mat-form-field appearance="fill" class="mat-form-field">
-            <mat-label>邮箱</mat-label>
+            <mat-label>用户名</mat-label>
+<!--            <mat-label>邮箱</mat-label>-->
             <input matInput formControlName="username">
           </mat-form-field>
 
@@ -19,7 +20,7 @@
       <mat-tab label="注册">
         <form [formGroup]="registrationForm" (ngSubmit)="onRegisterSubmit()">
           <mat-form-field appearance="fill" class="mat-form-field">
-            <mat-label>邮箱</mat-label>
+            <mat-label>用户名</mat-label>
             <input matInput formControlName="username">
           </mat-form-field>
           <mat-form-field appearance="fill" class="mat-form-field">
@@ -27,12 +28,12 @@
             <input matInput formControlName="password" type="password">
           </mat-form-field>
           <mat-form-field appearance="fill" class="mat-form-field">
-            <mat-label>角色</mat-label>
-              <mat-select>
-                <mat-option value="1">学生</mat-option>
-                <mat-option value="0">老师</mat-option>
-              </mat-select>
-            </mat-form-field>
+            <mat-label>身份</mat-label>
+            <mat-select formControlName="role">
+              <mat-option value=1>学生</mat-option>
+              <mat-option value=2>教师</mat-option>
+            </mat-select>
+          </mat-form-field>
           <button mat-raised-button color="primary" type="submit" class="button">注册</button>
         </form>
       </mat-tab>

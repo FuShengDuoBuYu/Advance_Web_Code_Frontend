@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
-import {MatRadioModule} from '@angular/material/radio';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import {MatDialog} from '@angular/material/dialog';
 import {HttpClient,HttpHeaders} from "@angular/common/http";
+import { environment } from '../../app.module';
 
 
 
@@ -19,13 +19,13 @@ export class IndexComponent {
 
   constructor(private formBuilder: FormBuilder, public dialog: MatDialog,public http:HttpClient) {
     this.registrationForm = this.formBuilder.group({
-      username: ['', [Validators.required, Validators.email]],
+      username: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       role: ['', [Validators.required]],
     });
 
     this.loginForm = this.formBuilder.group({
-      username: ['', [Validators.required, Validators.email]],
+      username: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(6)]],
     });
 
@@ -39,14 +39,15 @@ export class IndexComponent {
         headers: new HttpHeaders({ 'Content-Type': 'application/json' })
       };
 
-      const api = "http://localhost:10086/user/register";
+      const api = environment.apiPrefix + "/user/register";
       this.http.post(api,this.registrationForm.value,httpOptions).subscribe((res:any) => {
         if(res.success){
           console.log(res.message);
         }
       });
 
-      console.log(this.registrationForm.value);
+      // console.log(this.registrationForm.value);
+      // console.log(this.registrationForm.value);
 
     }
   }
@@ -58,8 +59,8 @@ export class IndexComponent {
         headers: new HttpHeaders({ 'Content-Type': 'application/json' })
       };
 
-      const api = "http://localhost:10086/user/login";
-      this.http.post(api, this.registrationForm.value,httpOptions).subscribe((res:any) => {
+      const api = environment.apiPrefix + "/user/login";
+      this.http.post(api,this.loginForm.value,httpOptions).subscribe((res:any) => {
           if(res.success){
             const storage = window.sessionStorage;
             sessionStorage.setItem("token",res.data.token);

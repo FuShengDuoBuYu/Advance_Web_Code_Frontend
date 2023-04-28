@@ -11,7 +11,6 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {MatListModule} from '@angular/material/list';
-import {  MatSelectModule } from '@angular/material/select';
 
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatCardModule } from '@angular/material/card';
@@ -32,10 +31,10 @@ import { SelectPlayerComponent } from './components/select-player/select-player.
 import { ClassroomComponent } from './components/classroom/classroom.component';
 
 // http
-import {HttpClientModule,HttpClientJsonpModule,HTTP_INTERCEPTORS} from '@angular/common/http';
+import {HttpClientModule,HttpClientJsonpModule} from '@angular/common/http';
 
 import { NgxEchartsModule } from 'ngx-echarts';
-import * as echarts from 'echarts';
+import { MatSelectModule } from '@angular/material/select';
 
 
 
@@ -80,8 +79,11 @@ import * as echarts from 'echarts';
   ],
   providers: [
 
-
   ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
+export const environment = {
+  production: false,
+  apiPrefix: 'http://localhost:10086'
+};

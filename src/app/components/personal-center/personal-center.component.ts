@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import * as echarts from 'echarts';
 import {HttpClient,HttpHeaders} from "@angular/common/http";
-import {FormBuilder, Validators} from "@angular/forms";
 
 @Component({
   selector: 'app-personal-center',
@@ -12,12 +11,16 @@ export class PersonalCenterComponent implements OnInit {
   constructor(public http:HttpClient) {
   }
 
+  ngAfterViewInit(){
+    document.title = "个人中心";
+  }
+
   ngOnInit() {
     let lineData;
     /*sessionStorage.setItem("token",'123456');*/
     type EChartsOption = echarts.EChartsOption;
     const chartDom = document.getElementById('line')!;
-    var myChart = echarts.init(chartDom);
+    const myChart = echarts.init(chartDom);
     let option: EChartsOption;
     const httpOptions = {
       headers: new HttpHeaders({ 'Content-Type': 'application/json' ,'token':sessionStorage.getItem("token")!})
@@ -54,7 +57,7 @@ export class PersonalCenterComponent implements OnInit {
     option && myChart.setOption(option);
 
     const chartDom2 = document.getElementById('pie')!;
-    var myChart2 = echarts.init(chartDom2);
+    const myChart2 = echarts.init(chartDom2);
     let option2: EChartsOption;
     let pieData;
     const api2 = "/person/pie";
@@ -104,7 +107,7 @@ export class PersonalCenterComponent implements OnInit {
     option && myChart2.setOption(option2);
 
     const chartDom3 = document.getElementById('radar')!;
-    var myChart3 = echarts.init(chartDom3);
+    const myChart3 = echarts.init(chartDom3);
     let option3: EChartsOption;
 
     const api3 = "/person/rader";
@@ -154,7 +157,7 @@ export class PersonalCenterComponent implements OnInit {
     option && myChart3.setOption(option3);
 
     const chartDom4 = document.getElementById('bar')!;
-    var myChart4 = echarts.init(chartDom4);
+    const myChart4 = echarts.init(chartDom4);
     let option4: EChartsOption;
 
     const api4 = "/person/bar";

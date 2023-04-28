@@ -30,12 +30,13 @@ export class ClassroomComponent {
       this.animations = {};
       this.scale = 0.6;
       //动画
-      const platform = this;
+      // const platform = this;
       this.anims = ['Walking', 'Walking Backwards', 'Turn', 'Running', 'Pointing', 'Talking', 'Pointing Gesture'];
       this.clock = new THREE.Clock();
 
     }
   ngAfterViewInit() {
+    document.title = "教室";
     this.init();
     this.render();
     this.playerView(this);
@@ -334,7 +335,7 @@ export class ClassroomComponent {
     this.player.action = name;
     this.player.actionTime = Date.now();
 
-    action.fadeIn(0.5);
+    action.fadeIn(0);
     action.play();
   }
 
@@ -398,7 +399,6 @@ export class ClassroomComponent {
 
   //移动角色
   movePlayer(dt) {
-    console.log("movePlayer")
     if (this.player.move.forward > 0) {
       const speed = (this.player.action == 'Running') ? 400 : 150;
       this.player.object.translateZ(dt * speed* this.scale);

@@ -15,8 +15,11 @@ export class IndexComponent {
 
   registrationForm!: FormGroup;
   loginForm!: FormGroup;
-
-
+  //页面加载完成
+  ngAfterViewInit() {
+    document.title = "首页";
+  }
+  
   constructor(private formBuilder: FormBuilder, public dialog: MatDialog,public http:HttpClient) {
     this.registrationForm = this.formBuilder.group({
       username: ['', [Validators.required]],
@@ -42,7 +45,7 @@ export class IndexComponent {
       const api = environment.apiPrefix + "/user/register";
       this.http.post(api,this.registrationForm.value,httpOptions).subscribe((res:any) => {
         if(res.success){
-          console.log(res.message);
+          alert(res.message+'请重新登录');
         }
       });
 
@@ -54,7 +57,6 @@ export class IndexComponent {
 
   onLoginSubmit() {
     if (this.loginForm.valid) {
-      //todo: login to server
       const httpOptions = {
         headers: new HttpHeaders({ 'Content-Type': 'application/json' })
       };

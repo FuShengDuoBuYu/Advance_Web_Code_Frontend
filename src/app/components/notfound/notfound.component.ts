@@ -6,5 +6,7 @@ import { Component } from '@angular/core';
   styleUrls: ['./notfound.component.css']
 })
 export class NotfoundComponent {
-
+  ngAfterViewInit(){
+    document.title = "404";
+  }
 }

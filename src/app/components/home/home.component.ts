@@ -11,6 +11,8 @@ import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 export class HomeComponent {
   //当页面view加载完成后，执行ngAfterViewInit方法
   ngAfterViewInit() {
+    //修改页面的title
+    document.title = '主页';
     const platformDiv = document.getElementById('platform');
     const platform = new Platform(platformDiv);
     window.platform = platform;

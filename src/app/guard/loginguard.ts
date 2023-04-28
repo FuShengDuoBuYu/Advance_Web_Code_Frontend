@@ -1,10 +1,8 @@
-import { Injectable } from '@angular/core';
-import { CanActivateFn, ActivatedRouteSnapshot, RouterStateSnapshot} from '@angular/router';
+import { CanActivateFn} from '@angular/router';
 
 
 export const loginguard : CanActivateFn=(
-    next: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
+    
   ) =>{
   /*console.log('CanActivate守卫：进入当前路由', next, state);*/
       if (sessionStorage.getItem('token')) {

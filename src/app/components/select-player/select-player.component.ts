@@ -1,7 +1,6 @@
 import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import * as THREE from 'three';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
-import {animate} from "@angular/animations";
 import {Object3D} from "three";
 import {OrbitControls} from "three-orbitcontrols-ts";
 @Component({
@@ -105,6 +104,7 @@ export class SelectPlayerComponent implements OnInit {
   }
 
   ngAfterViewInit() {
+    document.title = '选择角色';
     //找到localStorage中的playerIndex
     if(localStorage.getItem('roleName')){
       this.playerIndex = this.players.findIndex((item) => {

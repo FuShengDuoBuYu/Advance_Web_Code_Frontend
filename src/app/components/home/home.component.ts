@@ -75,7 +75,7 @@ export class HomeComponent {
         platform.playerViewControl(100, 0);
       }
     }, 100);
-    
+
   }
 }
 
@@ -189,7 +189,7 @@ class Platform {
     const dt = this.clock.getDelta();
     if (this.player.mixer !== undefined) this.player.mixer.update(dt);
     if (this.player.move !== false){
-      
+
       this.movePlayer(this.player.forward,dt);
     }
     else{
@@ -280,7 +280,7 @@ class Platform {
     this.camera.rotation.x += dy * 0.002;
     this.camera.rotation.x = Math.max(-Math.PI, Math.min(Math.PI, this.camera.rotation.x));
   }
-    
+
 
 
   //设置相机
@@ -305,11 +305,12 @@ class Platform {
     const collect = new THREE.Object3D();
     collect.position.set(40, 82, 94);
     collect.parent = this.player.object;
-        
+
     //设置相机,是用户的各个视角
     this.player.cameras = { front, back, wide, overhead, collect };
     //默认的相机是back
     platform.activeCamera = this.player.cameras.back;
+    console.log(this.player.cameras.active,"this.player.cameras.active")
   }
 
   //移动角色
@@ -356,7 +357,7 @@ class Platform {
 			] );
 
 			platform.scene.background = textureCube;
-			
+
 			platform.loadNextAnim(loader);
     });
   }

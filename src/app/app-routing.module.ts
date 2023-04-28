@@ -8,7 +8,10 @@ import { HomeComponent } from './components/home/home.component';
 import { SelectPlayerComponent } from './components/select-player/select-player.component';
 import {ClassroomComponent} from "./components/classroom/classroom.component";
 
+
 import { MatTabsModule } from '@angular/material/tabs';
+import {loginguard} from "./guard/loginguard";
+
 
 
 const routes: Routes = [
@@ -24,19 +27,23 @@ const routes: Routes = [
   },
   {
     path: 'home',
-    component: HomeComponent
+    component: HomeComponent,
+    canActivate: [loginguard],
   },
   {
     path: 'personalCenter',
-    component: PersonalCenterComponent
+    component: PersonalCenterComponent,
+    canActivate: [loginguard],
   },
   {
     path: 'selectPlayer',
-    component: SelectPlayerComponent
+    component: SelectPlayerComponent,
+    canActivate: [loginguard],
   },
   {
     path: 'classroom',
-    component: ClassroomComponent
+    component: ClassroomComponent,
+    canActivate: [loginguard],
   },
   {
     path:'**',

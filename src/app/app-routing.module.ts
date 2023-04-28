@@ -8,8 +8,6 @@ import { HomeComponent } from './components/home/home.component';
 import { SelectPlayerComponent } from './components/select-player/select-player.component';
 import {ClassroomComponent} from "./components/classroom/classroom.component";
 
-import { MatTabsModule } from '@angular/material/tabs';
-
 
 const routes: Routes = [
   {

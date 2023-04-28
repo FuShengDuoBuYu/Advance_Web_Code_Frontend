@@ -31,11 +31,9 @@ import { SelectPlayerComponent } from './components/select-player/select-player.
 import { ClassroomComponent } from './components/classroom/classroom.component';
 
 // http
-import {HttpClientModule,HttpClientJsonpModule,HTTP_INTERCEPTORS} from '@angular/common/http';
+import {HttpClientModule,HttpClientJsonpModule} from '@angular/common/http';
 
 import { NgxEchartsModule } from 'ngx-echarts';
-import * as echarts from 'echarts';
-import { MatOptionModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 
 

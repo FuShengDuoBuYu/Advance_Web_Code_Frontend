@@ -1,7 +1,6 @@
 //@ts-nocheck
 import { Component } from '@angular/core';
 import * as THREE from 'three';
-import {Vector2} from "three";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import { JoyStick} from "./lib"
@@ -39,6 +38,8 @@ export class ClassroomComponent {
   ngAfterViewInit() {
     this.init();
     this.render();
+    this.playerView(this);
+    this.playerMove(this);
   }
 
   init() {
@@ -164,7 +165,7 @@ export class ClassroomComponent {
 
     //
 
-    window.addEventListener( 'resize', this.onWindowResize );
+    window.addEventListener( 'resize', this.onWindowResize.bind(this) );
 
   }
 
@@ -419,8 +420,94 @@ export class ClassroomComponent {
     this.player.object.rotateY(this.player.move.turn * dt);
     this.camera.lookAt(this.player.object.position);
   }
+  //监听用户的wasd输入
+  playerMove(platform) {
+    let isMove = false;
+    document.addEventListener('keydown', (event) => {
+      if(isMove) return;
+      switch (event.keyCode) {
+        case 87: // w
+          platform.playerControl1('w');
+          break;
+        //按住c后进入classroom界面
+        case 67: // c
+          window.location.href = '/classroom';
+      }
+    }, false);
+    //松手后停止
+    document.addEventListener('keyup', (event) => {
+      isMove = false;
+      platform.playerControl1('stop');
+    }, false);
+  }
 
+  //监听用户的鼠标视角
+  playerView(platform) {
+    //监听一次鼠标移动的距离
+    let lastX = 0;
+    let lastY = 0;
+    let isMouseMove = false;
+    document.addEventListener('mousemove', (event) => {
+      if(isMouseMove) return;
+      isMouseMove = true;
+      const x = event.clientX;
+      const y = event.clientY;
+      const dx = x - lastX;
+      const dy = y - lastY;
+      lastX = x;
+      lastY = y;
+      platform.playerViewControl(dx, dy);
+      setTimeout(() => {
+        isMouseMove = false;
+      }, 100);
+    }, false);
+    //每100ms监听一次鼠标的位置
+    setInterval(() => {
+      //获取当前鼠标的位置
+      if(isMouseMove) return;
+      if(lastX<10){
+        platform.playerViewControl(-100, 0);
+      }
+      if(innerWidth-lastX<10){
+        platform.playerViewControl(100, 0);
+      }
+    }, 100);
+
+  }
+
+  //设置键盘带来的移动控制
+  playerControl1(forward) {
+    if(forward=='w'){
+      this.player.forward = 'w';
+      this.player.move = { forward: 300, turn: 0 };
+      if(this.actionAnimation!=='Walking'){
+        window.platform.action = 'Walking'
+        this.actionAnimation = 'Walking'
+      }
+    }
+    if(forward=='stop'){
+      this.player.forward = 'stop';
+      delete this.player.move;
+      if(this.actionAnimation!=='Idle'){
+        window.platform.action = 'Idle'
+        this.actionAnimation = 'Idle'
+      }
+    }
+  }
+
+  //设置鼠标带来的视角控制
+  playerViewControl(dx,dy){
+    dy = -dy;
+    dx = -dx;
+    this.player.object.rotation.y += dx * 0.002;
+    this.player.object.rotation.y = Math.max(-Math.PI, Math.min(Math.PI, this.player.object.rotation.y));
+
+    this.camera.rotation.x += dy * 0.002;
+    this.camera.rotation.x = Math.max(-Math.PI, Math.min(Math.PI, this.camera.rotation.x));
+  }
 }
+
+
 
 class JoyStick{
   constructor(options){

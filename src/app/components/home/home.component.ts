@@ -71,7 +71,7 @@ class Platform {
   init() {
     //相机视角
     this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 10, 200000);
-    this.camera.position.set(112, 100, 600);
+    this.camera.position.set(112, 100, 6000);
     //设置场景
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x00a0f0);
@@ -172,7 +172,7 @@ class Platform {
       this.camera.lookAt(pos);
     }
 
-    //确保太阳光的位置保证定向光线不断指向人物
+    //确保太阳光的位置保证定向光线不断指向人物000
     if (this.sun != undefined) {
       this.sun.position.x = this.player.object.position.x;
       this.sun.position.y = this.player.object.position.y + 200;

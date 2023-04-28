@@ -10,8 +10,14 @@ import { FormsModule,ReactiveFormsModule } from '@angular/forms';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import {MatListModule} from '@angular/material/list';
+
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatCardModule } from '@angular/material/card';
+import {MatRadioModule} from '@angular/material/radio';
+// sidenav
+import {MatSidenavModule} from '@angular/material/sidenav';
+
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -20,8 +26,21 @@ import { IndexComponent } from './components/index/index.component';
 import { NotfoundComponent } from './components/notfound/notfound.component';
 import { PersonalCenterComponent } from './components/personal-center/personal-center.component';
 import { HomeComponent } from './components/home/home.component';
+
 import { SelectPlayerComponent } from './components/select-player/select-player.component';
 import { ClassroomComponent } from './components/classroom/classroom.component';
+
+// http
+import {HttpClientModule,HttpClientJsonpModule,HTTP_INTERCEPTORS} from '@angular/common/http';
+
+import { NgxEchartsModule } from 'ngx-echarts';
+import * as echarts from 'echarts';
+import { MatOptionModule } from '@angular/material/core';
+import { MatSelectModule } from '@angular/material/select';
+
+
+
+
 
 @NgModule({
   declarations: [
@@ -47,10 +66,26 @@ import { ClassroomComponent } from './components/classroom/classroom.component';
     MatIconModule,
     MatTooltipModule,
     MatDialogModule,
-    MatCardModule
-    
+    MatCardModule,
+    MatRadioModule,
+    MatListModule,
+
+    MatSelectModule,
+
+
+    HttpClientModule,
+    HttpClientJsonpModule,
+    MatSidenavModule,
+    NgxEchartsModule,
+
   ],
-  providers: [],
+  providers: [
+
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
+export const environment = {
+  production: false,
+  apiPrefix: 'http://localhost:10086'
+};

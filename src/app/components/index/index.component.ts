@@ -1,6 +1,10 @@
 import { Component } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import {MatDialog} from '@angular/material/dialog';
+import {HttpClient,HttpHeaders} from "@angular/common/http";
+import { environment } from '../../app.module';
+
+
 
 @Component({
   selector: 'app-index',
@@ -12,29 +16,57 @@ export class IndexComponent {
   registrationForm!: FormGroup;
   loginForm!: FormGroup;
 
-  constructor(private formBuilder: FormBuilder, public dialog: MatDialog) {
+
+  constructor(private formBuilder: FormBuilder, public dialog: MatDialog,public http:HttpClient) {
     this.registrationForm = this.formBuilder.group({
-      email: ['', [Validators.required, Validators.email]],
+      username: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(6)]],
+      role: ['', [Validators.required]],
     });
 
     this.loginForm = this.formBuilder.group({
-      email: ['', [Validators.required, Validators.email]],
+      username: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(6)]],
     });
+
   }
 
 
   onRegisterSubmit() {
     if (this.registrationForm.valid) {
       //todo: register to server
-      console.log(this.registrationForm.value);
+      const httpOptions = {
+        headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+      };
+
+      const api = environment.apiPrefix + "/user/register";
+      this.http.post(api,this.registrationForm.value,httpOptions).subscribe((res:any) => {
+        if(res.success){
+          console.log(res.message);
+        }
+      });
+
+      // console.log(this.registrationForm.value);
+      // console.log(this.registrationForm.value);
+
     }
   }
 
   onLoginSubmit() {
     if (this.loginForm.valid) {
       //todo: login to server
+      const httpOptions = {
+        headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+      };
+
+      const api = environment.apiPrefix + "/user/login";
+      this.http.post(api,this.loginForm.value,httpOptions).subscribe((res:any) => {
+          if(res.success){
+            const storage = window.sessionStorage;
+            sessionStorage.setItem("token",res.data.token);
+            console.log(res.message);
+          }
+      });
       console.log(this.loginForm.value);
       // 重定向到home
       window.location.href = '/selectPlayer';

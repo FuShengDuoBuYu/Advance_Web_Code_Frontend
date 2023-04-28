@@ -65,11 +65,14 @@ export class IndexComponent {
             const storage = window.sessionStorage;
             sessionStorage.setItem("token",res.data.token);
             console.log(res.message);
+            // 重定向到home
+            window.location.href = '/selectPlayer';
+          } else {
+            // 弹出alert
+            alert(res.message);
           }
       });
       console.log(this.loginForm.value);
-      // 重定向到home
-      window.location.href = '/selectPlayer';
     }
   }
 }

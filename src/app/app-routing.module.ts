@@ -8,12 +8,11 @@ import { HomeComponent } from './components/home/home.component';
 import { SelectPlayerComponent } from './components/select-player/select-player.component';
 import {ClassroomComponent} from "./components/classroom/classroom.component";
 
-<<<<<<< HEAD
+
 import { MatTabsModule } from '@angular/material/tabs';
 import {loginguard} from "./guard/loginguard";
 
-=======
->>>>>>> 5ae4305a3047dc16b71173a4eb96723d422aadb1
+
 
 const routes: Routes = [
   {

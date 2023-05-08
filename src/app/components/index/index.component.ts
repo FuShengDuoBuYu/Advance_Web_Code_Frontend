@@ -3,7 +3,7 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import {MatDialog} from '@angular/material/dialog';
 import {HttpClient,HttpHeaders} from "@angular/common/http";
 import { environment } from '../../app.module';
-
+import jwtDecode from 'jwt-decode';
 
 
 @Component({
@@ -64,9 +64,14 @@ export class IndexComponent {
       const api = environment.apiPrefix + "/user/login";
       this.http.post(api,this.loginForm.value,httpOptions).subscribe((res:any) => {
           if(res.success){
-            const storage = window.sessionStorage;
-            sessionStorage.setItem("token",res.data.token);
+            // const storage = window.localStorage;
+            localStorage.setItem("token",res.data.token);
+            //解码token，以jwt格式
+            let token = jwtDecode(res.data.token) as { role: string, username: string };;
+            console.log(token);
             console.log(res.message);
+            localStorage.setItem("role",token.role);
+            localStorage.setItem("username",token.username);
             // 重定向到home
             window.location.href = '/selectPlayer';
           } else {

@@ -5,7 +5,7 @@ export const loginguard : CanActivateFn=(
     
   ) =>{
   /*console.log('CanActivate守卫：进入当前路由', next, state);*/
-      if (sessionStorage.getItem('token')) {
+      if (localStorage.getItem('token')) {
         return true;
       } else {
         alert("请先登录！");

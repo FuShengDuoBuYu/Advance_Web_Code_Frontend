@@ -44,7 +44,7 @@ export class SelectPlayerComponent implements OnInit {
       "image": "assets/images/SimplePeople_FireFighter_Brown.png"
     },
     {
-      "name": "HouseWife",
+      "name": "Housewife",
       "url": "assets/fbx/people/Housewife.fbx",
       "description": "A 3D model of a female character, likely intended for domestic or household-themed visualizations.",
       "image": "assets/images/SimplePeople_HouseWife_Brown.png"
@@ -86,7 +86,7 @@ export class SelectPlayerComponent implements OnInit {
       "image": "assets/images/SimplePeople_Sheriff_Brown.png"
     },
     {
-      "name": "StreetMan",
+      "name": "Streetman",
       "url": "assets/fbx/people/Streetman.fbx",
       "description": "A 3D model of a male character dressed in streetwear, no specific profession or role mentioned.",
       "image": "assets/images/SimplePeople_StreetMan_Brown.png"

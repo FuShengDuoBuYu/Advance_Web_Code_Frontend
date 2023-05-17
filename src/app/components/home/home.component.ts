@@ -1,23 +1,41 @@
 //@ts-nocheck
 import { Component } from '@angular/core';
 import * as THREE from 'three';
+import io from 'socket.io-client';
+import { environment } from '../../app.module';
+
 //如果报错,那么就从如下位置安装
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
+import { randInt } from 'three/src/math/MathUtils';
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent {
+  constructor() {
+  }
   //当页面view加载完成后，执行ngAfterViewInit方法
   ngAfterViewInit() {
     //修改页面的title
     document.title = '主页';
+    
+    const url = environment.socketPrefix;
+    console.log(url);
+    let opts = {
+      query: 'roomId=home&userName=' + localStorage.getItem('role') + '-' + localStorage.getItem('username'),
+      transports:['websocket']
+    };
+    const socket = io(url,opts);
+    socket.connect();
+    console.log(socket);
+
     const platformDiv = document.getElementById('platform');
-    const platform = new Platform(platformDiv);
+    const platform = new Platform(platformDiv, socket);
     window.platform = platform;
     this.playerMove(platform);
     this.playerView(platform);
+
   }
 
   // 点击按钮后跳转到个人中心
@@ -84,7 +102,9 @@ export class HomeComponent {
 
 //platform
 class Platform {
-  constructor(platformDiv) {
+  constructor(platformDiv, socket) {
+
+    this.socket = socket;
 
     this.container;
     this.player = {};
@@ -96,6 +116,10 @@ class Platform {
     this.scene;
     this.renderer;
     this.actionAnimation;
+    this.remoteData;
+    this.remotePlayers = {};
+    this.remoteColliders;
+
     //初始化div
     this.container = document.createElement('div');
     this.container.style.width = '100%';
@@ -177,6 +201,16 @@ class Platform {
       //设置下一个动画
       platform.loadNextAnim(loader);
     });
+
+    // 初始化user参数
+    this.socket.emit('init',{
+      rolename: localStorage.getItem('roleName'),
+      username: localStorage.getItem('role') + '-' + localStorage.getItem('username'),
+      x: -500,
+      y: 0,
+      z: -2000,
+    });
+
     //加载地图
     this.loadEnvironment(loader);
     //设置渲染器
@@ -185,10 +219,92 @@ class Platform {
     this.renderer.setSize(window.innerWidth, window.innerHeight * 0.9);
     this.renderer.shadowMap.enabled = true;
     this.container.appendChild(this.renderer.domElement);
+
+
+
+    // 设置远程位置同步
+		this.socket.on('remoteData', function(data){
+			console.log("remoteData");
+			console.log(data);
+			platform.remoteData = data;
+      // 获取this.remotePlayers中的所有key
+      var keys = Object.keys(platform.remotePlayers);
+      var remoteNames = [];
+      for (let i = 0; i < data.length; i++) {
+        if (data[i].username == localStorage.getItem('role') + '-' + localStorage.getItem('username')) {
+          continue;
+        }
+        remoteNames.push(data[i].username);
+        platform.loadRemotePlayer(loader, data[i]);
+      }
+      // 删除多余的remotePlayers
+      for (let i = 0; i < keys.length; i++) {
+        if (remoteNames.indexOf(keys[i]) == -1) {
+          platform.scene.remove(platform.remotePlayers[keys[i]].object);
+          delete platform.remotePlayers[keys[i]];
+        }
+      }
+      console.log(remoteNames);
+      console.log(platform.remotePlayers)
+      console.log(platform.scene.children)
+		});
+
   }
+
+  loadRemotePlayer(loader, data) {
+    var temp_player = {};
+    const platform = this;
+    // 处理初始位置的模型，存在bug
+    if (data.x == -500 && data.y == 0 && data.z == -2000) {
+      return;
+    }
+    // 检查是否remotePlayers是否已经存在，通过判断username
+    if (this.remotePlayers[data.username]!=undefined && this.remotePlayers[data.username].hasOwnProperty('object')) {
+      // 如果存在，就仅仅更新位置
+      temp_player = this.remotePlayers[data.username];
+      if(temp_player.object != null){
+        console.log("exists:");
+        console.log(temp_player);
+        temp_player.object.position.set(data.x, data.y, data.z)
+        return;
+      }
+    }
+      loader.load(`assets/fbx/people/`+data.rolename+`.fbx`, function (object) {
+        object.mixer = new THREE.AnimationMixer(object);
+        temp_player.mixer = object.mixer;
+        temp_player.root = object.mixer.getRoot();
+        object.name = data.rolename;
+        //添加对应内容
+        object.traverse(function (child) {
+          if (child.isMesh) {
+            child.material.map = null;
+            child.castShadow = true;
+            child.receiveShadow = false;
+          }
+        });
+        //贴图纹理
+        const texture = new THREE.TextureLoader().load(`assets/images/SimplePeople_`+data.rolename+`_Brown.png`, (texture) => {
+          object.traverse(function (child) {
+            if (child.isMesh) {
+              child.material.map = texture;
+              child.material.needsUpdate = true;
+            }
+          });
+        });
+
+        //加入这个模型,设置模型的位置
+        object.position.set(data.x, data.y, data.z);
+        platform.scene.add(object);
+        //设置用户的object就是这个形象
+        temp_player.object = object;
+      });
+      this.remotePlayers[data.username] = temp_player;
+  }
+
   //设置动画
   animate() {
     const dt = this.clock.getDelta();
+    // console.log('animate');
     if (this.player.mixer !== undefined) this.player.mixer.update(dt);
     if (this.player.move !== false){
 
@@ -329,6 +445,15 @@ class Platform {
     if(direction=='d'){
       this.player.object.translateX(-dt*400);
     }
+    // 共享位置信息
+    // console.log(this.player.object)
+    this.socket.emit('move', {
+      rolename: localStorage.getItem('roleName'),
+      username: localStorage.getItem('role') + '-' + localStorage.getItem('username'),
+      x: this.player.object.position.x,
+      y: this.player.object.position.y,
+      z: this.player.object.position.z,
+    });
   }
 
   //加载环境地图

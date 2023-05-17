@@ -23,7 +23,7 @@ export class PersonalCenterComponent implements OnInit {
     const myChart = echarts.init(chartDom);
     let option: EChartsOption;
     const httpOptions = {
-      headers: new HttpHeaders({ 'Content-Type': 'application/json' ,'token':sessionStorage.getItem("token")!})
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' ,'token':localStorage.getItem("token")!})
     };
     /*console.log(httpOptions);*/
     const api = "/person/line";

@@ -29,6 +29,7 @@ export class ClassroomComponent {
       this.player={};
       this.animations = {};
       this.scale = 0.6;
+      this.actionAnimation;
       //动画
       // const platform = this;
       this.anims = ['Walking', 'Walking Backwards', 'Turn', 'Running', 'Pointing', 'Talking', 'Pointing Gesture'];
@@ -276,12 +277,12 @@ export class ClassroomComponent {
     requestAnimationFrame(function () { platform.animate(); });
     if (this.player.mixer !== undefined) this.player.mixer.update(dt);
     //角色从走动自动转换为跑动
-    if (this.player.action == 'Walking') {
-      const elapsedTime = Date.now() - this.player.actionTime;
-      if (elapsedTime > 1000 && this.player.move.forward > 0) {
-        this.action = 'Running';
-      }
-    }
+    // if (this.player.action == 'Walking') {
+    //   const elapsedTime = Date.now() - this.player.actionTime;
+    //   if (elapsedTime > 1000 && this.player.move.forward > 0) {
+    //     this.action = 'Running';
+    //   }
+    // }
 
     // console.log(this.player.cameras, this.player.cameras.active);
     if (this.player.move !== undefined) this.movePlayer(dt);
@@ -329,12 +330,13 @@ export class ClassroomComponent {
   //get and set Action
   set action(name) {
     //设置一个动作
+    console.log(name)
     const action = this.player.mixer.clipAction(this.animations[name]);
     action.time = 0;
     this.player.mixer.stopAllAction();
     this.player.action = name;
     this.player.actionTime = Date.now();
-
+    console.log(this.player.action)
     action.fadeIn(0);
     action.play();
   }
@@ -481,7 +483,7 @@ export class ClassroomComponent {
       this.player.forward = 'w';
       this.player.move = { forward: 300, turn: 0 };
       if(this.actionAnimation!=='Walking'){
-        window.platform.action = 'Walking'
+        this.action = 'Walking'
         this.actionAnimation = 'Walking'
       }
     }
@@ -489,7 +491,7 @@ export class ClassroomComponent {
       this.player.forward = 'stop';
       delete this.player.move;
       if(this.actionAnimation!=='Idle'){
-        window.platform.action = 'Idle'
+        this.action = 'Idle'
         this.actionAnimation = 'Idle'
       }
     }

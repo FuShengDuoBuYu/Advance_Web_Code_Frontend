@@ -23,7 +23,7 @@ export class HomeComponent {
   ngAfterViewInit() {
     //修改页面的title
     document.title = '主页';
-    
+
     const url = environment.socketPrefix;
     console.log(url);
     let opts = {
@@ -31,17 +31,55 @@ export class HomeComponent {
       transports:['websocket']
     };
     this.socket = io(url,opts);
+    this.timers = {};
+    this.timers['timer'] = setTimeout(
+      () => {
+        console.log('timer');
+      },5000
+    )
     this.socket.connect();
     console.log(this.socket);
     this.socket.on('connect', () => {
       this.output(
         '<span class="connect-msg">The client has connected with the server. Username: ' +
-        this.userName + ' Room: ' + this.roomId + 
+        this.userName + ' Room: ' + this.roomId +
           '</span>'
       );
     });
     this.socket.on('chat', (data: { userName: string; message: string }) => {
-      console.log('Received message', data);
+      console.log(this.timers, 'timers');
+      for(let name in platform.remotePlayers){
+        if(name == data.userName){
+          let speech = platform.speechBubbles[name];
+          if(speech !== undefined){
+            speech.update(data.message);
+          }else {
+            platform.speechBubbles[name] = new SpeechBubble(platform,data.message,150);
+            platform.speechBubbles[name].player = platform.remotePlayers[name];
+            this.timers[name] = setTimeout(function(){
+              platform.speechBubbles[name].mesh.parent.remove(platform.speechBubbles[name].mesh);
+              delete platform.speechBubbles[name];
+            }, 5000);
+            platform.speechBubbles[name].update(data.message)
+          }
+        }
+      }
+      let name = data.userName;
+      if (data.userName == localStorage.getItem('role') + '-' + localStorage.getItem('username')){
+        let speech = platform.speechBubbles[name];
+        if(speech !== undefined){
+          speech.update(data.message);
+        }else {
+          platform.speechBubbles[name] = new SpeechBubble(platform,data.message,150);
+          platform.speechBubbles[name].player = platform.player;
+          this.timers[name] = setTimeout(function(){
+            platform.speechBubbles[name].mesh.parent.remove(platform.speechBubbles[name].mesh);
+            delete platform.speechBubbles[name];
+          }, 5000);
+          platform.speechBubbles[name].update(data.message)
+        }
+      }
+
       this.output(
         '<span class="username-msg">' +
           data.userName +
@@ -146,9 +184,9 @@ export class HomeComponent {
         platform.playerViewControl(100, 0);
       }
     }, 100);
-
   }
 }
+
 
 
 //platform
@@ -170,7 +208,7 @@ class Platform {
     this.remoteData;
     this.remotePlayers = {};
     this.remoteColliders;
-
+    this.speechBubbles = {};
     //初始化div
     this.container = document.createElement('div');
     this.container.style.width = '100%';
@@ -260,6 +298,7 @@ class Platform {
       x: -500,
       y: 0,
       z: -2000,
+      r: 0,
     });
 
     //加载地图
@@ -306,7 +345,7 @@ class Platform {
     var temp_player = {};
     const platform = this;
     // 处理初始位置的模型，存在bug
-    if (data.x == -500 && data.y == 0 && data.z == -2000) {
+    if (data.x == -500 && data.y == 0 && data.z == -2000 && data.r == 0) {
       return;
     }
     // 检查是否remotePlayers是否已经存在，通过判断username
@@ -317,6 +356,7 @@ class Platform {
         console.log("exists:");
         console.log(temp_player);
         temp_player.object.position.set(data.x, data.y, data.z)
+        temp_player.object.rotation.y = data.r;
         return;
       }
     }
@@ -380,6 +420,9 @@ class Platform {
       this.sun.target = this.player.object;
     }
 
+    for (let name in this.speechBubbles) {
+      this.speechBubbles[name].show(this.camera.position);
+    }
     this.renderer.render(this.scene, this.camera);
     requestAnimationFrame(function () { platform.animate(); });
   }
@@ -504,6 +547,7 @@ class Platform {
       x: this.player.object.position.x,
       y: this.player.object.position.y,
       z: this.player.object.position.z,
+      r: this.player.object.rotation.y
     });
   }
 
@@ -538,5 +582,108 @@ class Platform {
 
 			platform.loadNextAnim(loader);
     });
+  }
+}
+
+class SpeechBubble{
+  constructor(game, msg, size=1){
+    this.config = { font:'Calibri', size:24, padding:10, colour:'#222', width:256, height:256 };
+
+    const planeGeometry = new THREE.PlaneGeometry(size, size);
+    const planeMaterial = new THREE.MeshBasicMaterial()
+    this.mesh = new THREE.Mesh(planeGeometry, planeMaterial);
+    game.scene.add(this.mesh);
+
+    const self = this;
+    const loader = new THREE.TextureLoader();
+    loader.load(
+      // resource URL
+      `assets/images/speech.png`,
+
+      // onLoad callback
+      function ( texture ) {
+        // in this example we create the material when the texture is loaded
+        self.img = texture.image;
+        self.mesh.material.map = texture;
+        self.mesh.material.transparent = true;
+        self.mesh.material.needsUpdate = true;
+        if (msg!==undefined) self.update(msg);
+      },
+
+      // onProgress callback currently not supported
+      undefined,
+
+      // onError callback
+      function ( err ) {
+        console.error( 'An error happened.' );
+      }
+    );
+  }
+
+  update(msg){
+    if (this.mesh===undefined) return;
+
+    let context = this.context;
+
+    if (this.mesh.userData.context===undefined){
+      const canvas = this.createOffscreenCanvas(this.config.width, this.config.height);
+      this.context = canvas.getContext('2d');
+      context = this.context;
+      context.font = `${this.config.size}pt ${this.config.font}`;
+      context.fillStyle = this.config.colour;
+      context.textAlign = 'center';
+      this.mesh.material.map = new THREE.CanvasTexture(canvas);
+    }
+
+    const bg = this.img;
+    console.log(bg,"bg")
+    context.clearRect(0, 0, this.config.width, this.config.height);
+    context.drawImage(bg, 0, 0,512,512, 0, 0, this.config.width, this.config.height);
+    this.wrapText(msg, context);
+
+    this.mesh.material.map.needsUpdate = true;
+  }
+
+  createOffscreenCanvas(w, h) {
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    return canvas;
+  }
+
+  wrapText(text, context){
+    const words = text.split(' ');
+    let line = '';
+    const lines = [];
+    const maxWidth = this.config.width - 2*this.config.padding;
+    const lineHeight = this.config.size + 8;
+
+    words.forEach( function(word){
+      const testLine = `${line}${word} `;
+      const metrics = context.measureText(testLine);
+      const testWidth = metrics.width;
+      if (testWidth > maxWidth) {
+        lines.push(line);
+        line = `${word} `;
+      }else {
+        line = testLine;
+      }
+    });
+
+    if (line != '') lines.push(line);
+
+    let y = (this.config.height - lines.length * lineHeight)/2;
+
+    lines.forEach( function(line){
+      context.fillText(line, 128, y);
+      y += lineHeight;
+    });
+  }
+
+  show(pos){
+    if (this.mesh!==undefined && this.player!==undefined){
+      this.mesh.position.set(this.player.object.position.x, this.player.object.position.y + 380, this.player.object.position.z);
+      this.mesh.lookAt(pos);
+    }
   }
 }

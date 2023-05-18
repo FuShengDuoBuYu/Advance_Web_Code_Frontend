@@ -6,16 +6,17 @@
     </button>
 </mat-toolbar>
 
-<h1>Chat Client</h1>
-<br/>
+<div class="chat">
+  <div class="chat-body">
+    <div id="console" class="well"></div>
+  </div>
 
-<div id="console" class="well"></div>
-
-<form class="well form-inline" (ngSubmit)="onSubmit()">
+  <form class="well form-inline" (ngSubmit)="onSubmit()">
     <input id="msg" class="input-xlarge" type="text" placeholder="Type something..." [(ngModel)]="message" name="message" />
     <button type="submit" class="btn" id="send">Send</button>
     <!-- <button type="button" (click)="disconnect()" class="btn">Disconnect</button> -->
-</form>
+  </form>
+</div>
 
 <div id="platform">
 

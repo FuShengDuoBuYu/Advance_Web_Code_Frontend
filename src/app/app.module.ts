@@ -86,6 +86,8 @@ export class AppModule { }
 export const environment = {
   production: false,
   // apiPrefix: 'http://106.15.35.61:10086',
-  apiPrefix: 'http://localhost:10086',
-  socketPrefix: 'http://localhost:10088'
+  // apiPrefix: 'http://localhost:10086',
+  // socketPrefix: 'http://localhost:10088'
+  apiPrefix: 'http://192.168.31.205:10086',
+  socketPrefix: 'http://192.168.31.205:10088'
 };

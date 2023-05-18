@@ -13,6 +13,10 @@ import { randInt } from 'three/src/math/MathUtils';
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent {
+  userName: string | null = localStorage.getItem('role') + '-' + localStorage.getItem('username');
+  roomId: string = 'home';
+  message = '';
+  socket: any;
   constructor() {
   }
   //当页面view加载完成后，执行ngAfterViewInit方法
@@ -23,19 +27,66 @@ export class HomeComponent {
     const url = environment.socketPrefix;
     console.log(url);
     let opts = {
-      query: 'roomId=home&userName=' + localStorage.getItem('role') + '-' + localStorage.getItem('username'),
+      query: 'roomId=' + this.roomId + '&userName=' + localStorage.getItem('role') + '-' + localStorage.getItem('username'),
       transports:['websocket']
     };
-    const socket = io(url,opts);
-    socket.connect();
-    console.log(socket);
+    this.socket = io(url,opts);
+    this.socket.connect();
+    console.log(this.socket);
+    this.socket.on('connect', () => {
+      this.output(
+        '<span class="connect-msg">The client has connected with the server. Username: ' +
+        this.userName + ' Room: ' + this.roomId + 
+          '</span>'
+      );
+    });
+    this.socket.on('chat', (data: { userName: string; message: string }) => {
+      console.log('Received message', data);
+      this.output(
+        '<span class="username-msg">' +
+          data.userName +
+          ': ' +
+          data.message +
+        '</span>'
+      );
+    });
+    this.socket.on('disconnect', () => {
+      this.output('<span class="disconnect-msg">The client has disconnected!</span>');
+    });
+    this.socket.on('reconnect_attempt', (attempts: string) => {
+      console.log('Try to reconnect at ' + attempts + ' attempt(s).');
+    });
 
     const platformDiv = document.getElementById('platform');
-    const platform = new Platform(platformDiv, socket);
+    const platform = new Platform(platformDiv, this.socket);
     window.platform = platform;
     this.playerMove(platform);
     this.playerView(platform);
 
+  }
+
+  onSubmit() {
+    // 获取到表单里的数据
+    console.log(this.userName);
+    console.log(this.message);
+    this.sendMessage();
+  }
+
+  sendMessage() {
+    const jsonObject = {
+      userName: this.userName,
+      message: this.message,
+      roomId: this.roomId
+    };
+    this.socket.emit('chat', jsonObject);
+    this.message = '';
+  }
+
+  output(message: string) {
+    // 获取当前时间
+    const currentTime = `[${new Date().toLocaleTimeString()}]`;
+    const element = `<div>${currentTime} ${message}</div>`;
+    document.getElementById('console')!.insertAdjacentHTML('beforebegin', element);
   }
 
   // 点击按钮后跳转到个人中心
@@ -224,8 +275,8 @@ class Platform {
 
     // 设置远程位置同步
 		this.socket.on('remoteData', function(data){
-			console.log("remoteData");
-			console.log(data);
+			// console.log("remoteData");
+			// console.log(data);
 			platform.remoteData = data;
       // 获取this.remotePlayers中的所有key
       var keys = Object.keys(platform.remotePlayers);
@@ -244,9 +295,9 @@ class Platform {
           delete platform.remotePlayers[keys[i]];
         }
       }
-      console.log(remoteNames);
-      console.log(platform.remotePlayers)
-      console.log(platform.scene.children)
+      // console.log(remoteNames);
+      // console.log(platform.remotePlayers)
+      // console.log(platform.scene.children)
 		});
 
   }

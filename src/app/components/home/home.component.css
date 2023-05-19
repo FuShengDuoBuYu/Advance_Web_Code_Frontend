@@ -23,3 +23,8 @@
 form { background: #eeeeee;bottom: 5%; width: 100%; position: absolute;}
 form input { border: 0; padding: 10px; width: 70%; }
 form button { width: 19%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+
+.chat-body img{
+  max-height: 30%;
+  max-width: 30%;
+}

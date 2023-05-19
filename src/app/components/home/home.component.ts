@@ -637,7 +637,6 @@ class SpeechBubble{
 
     const bg = this.img;
     if (bg===undefined) return;
-    console.log(bg,"bg")
     context.clearRect(0, 0, this.config.width, this.config.height);
     context.drawImage(bg, 0, 0,512,512, 0, 0, this.config.width, this.config.height);
     this.wrapText(msg, context);

@@ -4,12 +4,17 @@ import * as THREE from 'three';
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import { JoyStick} from "./lib"
+import {environment} from "../../app.module";
+import io from 'socket.io-client';
+import {Vector3} from "three";
+
 @Component({
   selector: 'app-classroom',
   templateUrl: './classroom.component.html',
   styleUrls: ['./classroom.component.css']
 })
 export class ClassroomComponent {
+  message: string = '';
     constructor() {
       this.camera;
       this.cameras;
@@ -30,18 +35,224 @@ export class ClassroomComponent {
       this.animations = {};
       this.scale = 0.6;
       this.actionAnimation;
+      this.roomId = "classroom";
       //动画
       // const platform = this;
       this.anims = ['Walking', 'Walking Backwards', 'Turn', 'Running', 'Pointing', 'Talking', 'Pointing Gesture'];
       this.clock = new THREE.Clock();
+      this.remotePlayers = {};
+      this.speechBubbles = {};
+      this.userName = localStorage.getItem('role') + '-' + localStorage.getItem('username');
+      this.timers = {};
+      this.remoteData = {};
 
     }
   ngAfterViewInit() {
     document.title = "教室";
     this.init();
+    this.initSocket();
     this.render();
     this.playerView(this);
     this.playerMove(this);
+  }
+
+  initSocket(){
+    let url = environment.socketPrefix
+    let platform = this;
+    let opts = {
+      query: 'roomId=' + this.roomId + '&userName=' + localStorage.getItem('role') + '-' + localStorage.getItem('username'),
+      transports:['websocket']
+    };
+    this.socket = io(url,opts);
+    this.socket.connect();
+    console.log(this.socket);
+    this.socket.on('connect', () => {
+      console.log('connect')
+      this.output(
+        '<span class="connect-msg">The client has connected with the server. Username: ' +
+        this.userName + ' Room: ' + this.roomId +
+        '</span>'
+      );
+    });
+    this.socket.on('chat', (data: { userName: string; message: string }) => {
+      for(let name in platform.remotePlayers){
+        if(name == data.userName){
+          let speech = platform.speechBubbles[name];
+          if(speech !== undefined){
+            speech.update(data.message);
+          }else {
+            platform.speechBubbles[name] = new SpeechBubble(platform,data.message,150);
+            platform.speechBubbles[name].player = platform.remotePlayers[name];
+            this.timers[name] = setTimeout(function(){
+              platform.speechBubbles[name].mesh.parent.remove(platform.speechBubbles[name].mesh);
+              delete platform.speechBubbles[name];
+            }, 5000);
+            platform.speechBubbles[name].update(data.message)
+          }
+        }
+      }
+      let name = data.userName;
+      if (data.userName == localStorage.getItem('role') + '-' + localStorage.getItem('username')){
+        let speech = platform.speechBubbles[name];
+        if(speech !== undefined){
+          speech.update(data.message);
+        }else {
+          platform.speechBubbles[name] = new SpeechBubble(platform,data.message,150);
+          platform.speechBubbles[name].player = platform.player;
+          this.timers[name] = setTimeout(function(){
+            platform.speechBubbles[name].mesh.parent.remove(platform.speechBubbles[name].mesh);
+            delete platform.speechBubbles[name];
+          }, 5000);
+          platform.speechBubbles[name].update(data.message)
+        }
+      }
+
+      this.output(
+        '<span class="username-msg">' +
+        data.userName +
+        ': ' +
+        data.message +
+        '</span>'
+      );
+    });
+    this.socket.on('disconnect', () => {
+      this.output('<span class="disconnect-msg">The client has disconnected!</span>');
+    });
+    this.socket.on('reconnect_attempt', (attempts: string) => {
+      console.log('Try to reconnect at ' + attempts + ' attempt(s).');
+    });
+
+    // 初始化user参数
+    this.socket.emit('init',{
+      rolename: localStorage.getItem('roleName'),
+      username: localStorage.getItem('role') + '-' + localStorage.getItem('username'),
+      x: -500,
+      y: 0,
+      z: -2000,
+      r: 0,
+    });
+
+    this.socket.on('remoteData', function(data){
+      // console.log("remoteData");
+      // console.log(data);
+      platform.remoteData = data;
+      // 获取this.remotePlayers中的所有key
+      var keys = Object.keys(platform.remotePlayers);
+      var remoteNames = [];
+      for (let i = 0; i < data.length; i++) {
+        if (data[i].username == localStorage.getItem('role') + '-' + localStorage.getItem('username')) {
+          continue;
+        }
+        remoteNames.push(data[i].username);
+        platform.loadRemotePlayer(new FBXLoader(), data[i]);
+      }
+      // 删除多余的remotePlayers
+      for (let i = 0; i < keys.length; i++) {
+        if (remoteNames.indexOf(keys[i]) == -1) {
+          platform.scene.remove(platform.remotePlayers[keys[i]].object);
+          delete platform.remotePlayers[keys[i]];
+        }
+      }
+      // console.log(remoteNames);
+      // console.log(platform.remotePlayers)
+      // console.log(platform.scene.children)
+    });
+    let _this = this;
+    // 初始化block参数
+    this.socket.on('addBlock', function(data){
+      const voxel = new THREE.Mesh( _this.cubeGeo, _this.cubeMaterial );
+      voxel.position.set(data.x1, data.y1, data.z1)
+      voxel.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
+      _this.scene.add( voxel );
+      _this.objects.push( voxel );
+    })
+
+    this.socket.on('deleteBlock', function(data){
+      console.log("deleteBlock");
+      for(let i = 0; i < _this.objects.length; i++){
+        if(_this.objects[i].position.x == data.x1 && _this.objects[i].position.y1 == data.y && _this.objects[i].position.z == data.z1){
+          _this.scene.remove(_this.objects[i]);
+          _this.objects.splice(i,1);
+          break;
+        }
+      }
+    })
+
+  }
+
+  loadRemotePlayer(loader, data) {
+    var temp_player = {};
+    const platform = this;
+    // 处理初始位置的模型，存在bug
+    if (data.x == -500 && data.y == 0 && data.z == -2000 && data.r == 0) {
+      return;
+    }
+    // 检查是否remotePlayers是否已经存在，通过判断username
+    if (this.remotePlayers[data.username]!=undefined && this.remotePlayers[data.username].hasOwnProperty('object')) {
+      // 如果存在，就仅仅更新位置
+      temp_player = this.remotePlayers[data.username];
+      if(temp_player.object != null){
+        console.log("exists:");
+        console.log(temp_player);
+        temp_player.object.position.set(data.x, data.y, data.z)
+        temp_player.object.rotation.y = data.r;
+        return;
+      }
+    }
+    loader.load(`assets/fbx/people/`+data.rolename+`.fbx`, function (object) {
+      object.mixer = new THREE.AnimationMixer(object);
+      temp_player.mixer = object.mixer;
+      temp_player.root = object.mixer.getRoot();
+      object.name = data.rolename;
+      //添加对应内容
+      object.traverse(function (child) {
+        if (child.isMesh) {
+          child.material.map = null;
+          child.castShadow = true;
+          child.receiveShadow = false;
+        }
+      });
+      //贴图纹理
+      const texture = new THREE.TextureLoader().load(`assets/images/SimplePeople_`+data.rolename+`_Brown.png`, (texture) => {
+        object.traverse(function (child) {
+          if (child.isMesh) {
+            child.material.map = texture;
+            child.material.needsUpdate = true;
+          }
+        });
+      });
+
+      //加入这个模型,设置模型的位置
+      object.position.set(data.x, data.y, data.z);
+      object.scale.set(platform.scale, platform.scale, platform.scale);
+      platform.scene.add(object);
+      //设置用户的object就是这个形象
+      temp_player.object = object;
+    });
+    this.remotePlayers[data.username] = temp_player;
+  }
+  onSubmit() {
+    // 获取到表单里的数据
+    console.log(this.userName);
+    console.log(this.message);
+    this.sendMessage();
+  }
+
+  sendMessage() {
+    const jsonObject = {
+      userName: this.userName,
+      message: this.message,
+      roomId: this.roomId
+    };
+    this.socket.emit('chat', jsonObject);
+    this.message = '';
+  }
+
+  output(message: string) {
+    // 获取当前时间
+    const currentTime = `[${new Date().toLocaleTimeString()}]`;
+    const element = `<div>${currentTime} ${message}</div>`;
+    document.getElementById('console')!.insertAdjacentHTML('beforebegin', element);
   }
 
   init() {
@@ -72,7 +283,7 @@ export class ClassroomComponent {
     light.shadow.mapSize.height = 1024;
     this.sun = light;
     this.scene.add(light);
-
+    this.intersect;
     //
     //加载模型
     const loader = new FBXLoader();
@@ -209,7 +420,6 @@ export class ClassroomComponent {
     const intersects = this.raycaster.intersectObjects( this.objects, false );
 
     if ( intersects.length > 0 ) {
-
       const intersect = intersects[ 0 ];
 
       // delete cube
@@ -218,22 +428,37 @@ export class ClassroomComponent {
 
         if ( intersect.object !== this.plane ) {
 
-          this.scene.remove( intersect.object );
-
-          this.objects.splice( this.objects.indexOf( intersect.object ), 1 );
+          console.log(intersect);
+          // this.scene.remove( intersect.object );
+          //
+          // this.objects.splice( this.objects.indexOf( intersect.object ), 1 );
+          this.socket.emit('deleteBlock', {
+            roomId: this.roomId,
+            x1: intersect.object.position.x,
+            y1: intersect.object.position.y,
+            z1: intersect.object.position.z,
+            x2: intersect.point.x,
+            y2: intersect.point.y,
+            z2: intersect.point.z,
+          });
 
         }
 
         // create cube
 
       } else {
-
         const voxel = new THREE.Mesh( this.cubeGeo, this.cubeMaterial );
         voxel.position.copy( intersect.point ).add( intersect.face.normal );
         voxel.position.divideScalar( 50 ).floor().multiplyScalar( 50 ).addScalar( 25 );
-        this.scene.add( voxel );
-
-        this.objects.push( voxel );
+        this.socket.emit('addBlock', {
+          roomId: this.roomId,
+          x1: voxel.position.x,
+          y1: voxel.position.y,
+          z1: voxel.position.z,
+          x2: intersect.face.normal.x,
+          y2: intersect.face.normal.y,
+          z2: intersect.face.normal.z,
+        });
 
       }
 
@@ -300,6 +525,10 @@ export class ClassroomComponent {
       this.sun.position.y = this.player.object.position.y + 200;
       this.sun.position.z = this.player.object.position.z + 100;
       this.sun.target = this.player.object;
+    }
+
+    for (let name in this.speechBubbles) {
+      this.speechBubbles[name].show(this.camera.position);
     }
 
     this.renderer.render(this.scene, this.camera);
@@ -421,6 +650,14 @@ export class ClassroomComponent {
     }
     this.player.object.rotateY(this.player.move.turn * dt);
     this.camera.lookAt(this.player.object.position);
+    this.socket.emit('move', {
+      rolename: localStorage.getItem('roleName'),
+      username: localStorage.getItem('role') + '-' + localStorage.getItem('username'),
+      x: this.player.object.position.x,
+      y: this.player.object.position.y,
+      z: this.player.object.position.z,
+      r: this.player.object.rotation.y
+    });
   }
   //监听用户的wasd输入
   playerMove(platform) {
@@ -508,7 +745,108 @@ export class ClassroomComponent {
     this.camera.rotation.x = Math.max(-Math.PI, Math.min(Math.PI, this.camera.rotation.x));
   }
 }
+class SpeechBubble{
+  constructor(game, msg, size=1){
+    this.config = { font:'Calibri', size:24, padding:10, colour:'#222', width:256, height:256 };
 
+    const planeGeometry = new THREE.PlaneGeometry(size, size);
+    const planeMaterial = new THREE.MeshBasicMaterial()
+    this.mesh = new THREE.Mesh(planeGeometry, planeMaterial);
+    game.scene.add(this.mesh);
+
+    const self = this;
+    const loader = new THREE.TextureLoader();
+    loader.load(
+      // resource URL
+      `assets/images/speech.png`,
+
+      // onLoad callback
+      function ( texture ) {
+        // in this example we create the material when the texture is loaded
+        self.img = texture.image;
+        self.mesh.material.map = texture;
+        self.mesh.material.transparent = true;
+        self.mesh.material.needsUpdate = true;
+        if (msg!==undefined) self.update(msg);
+      },
+
+      // onProgress callback currently not supported
+      undefined,
+
+      // onError callback
+      function ( err ) {
+        console.error( 'An error happened.' );
+      }
+    );
+  }
+
+  update(msg){
+    if (this.mesh===undefined) return;
+
+    let context = this.context;
+
+    if (this.mesh.userData.context===undefined){
+      const canvas = this.createOffscreenCanvas(this.config.width, this.config.height);
+      this.context = canvas.getContext('2d');
+      context = this.context;
+      context.font = `${this.config.size}pt ${this.config.font}`;
+      context.fillStyle = this.config.colour;
+      context.textAlign = 'center';
+      this.mesh.material.map = new THREE.CanvasTexture(canvas);
+    }
+
+    const bg = this.img;
+    if (bg===undefined) return;
+    context.clearRect(0, 0, this.config.width, this.config.height);
+    context.drawImage(bg, 0, 0,512,512, 0, 0, this.config.width, this.config.height);
+    this.wrapText(msg, context);
+
+    this.mesh.material.map.needsUpdate = true;
+  }
+
+  createOffscreenCanvas(w, h) {
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    return canvas;
+  }
+
+  wrapText(text, context){
+    const words = text.split(' ');
+    let line = '';
+    const lines = [];
+    const maxWidth = this.config.width - 2*this.config.padding;
+    const lineHeight = this.config.size + 8;
+
+    words.forEach( function(word){
+      const testLine = `${line}${word} `;
+      const metrics = context.measureText(testLine);
+      const testWidth = metrics.width;
+      if (testWidth > maxWidth) {
+        lines.push(line);
+        line = `${word} `;
+      }else {
+        line = testLine;
+      }
+    });
+
+    if (line != '') lines.push(line);
+
+    let y = (this.config.height - lines.length * lineHeight)/2;
+
+    lines.forEach( function(line){
+      context.fillText(line, 128, y);
+      y += lineHeight;
+    });
+  }
+
+  show(pos){
+    if (this.mesh!==undefined && this.player!==undefined){
+      this.mesh.position.set(this.player.object.position.x, this.player.object.position.y + 270, this.player.object.position.z);
+      this.mesh.lookAt(pos);
+    }
+  }
+}
 
 
 class JoyStick{

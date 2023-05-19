@@ -25,7 +25,6 @@ export class HomeComponent {
     document.title = '主页';
 
     const url = environment.socketPrefix;
-    console.log(url);
     let opts = {
       query: 'roomId=' + this.roomId + '&userName=' + localStorage.getItem('role') + '-' + localStorage.getItem('username'),
       transports:['websocket']
@@ -325,6 +324,7 @@ class Platform {
           continue;
         }
         remoteNames.push(data[i].username);
+        console.log(loader,"in remoteData");
         platform.loadRemotePlayer(loader, data[i]);
       }
       // 删除多余的remotePlayers
@@ -636,6 +636,7 @@ class SpeechBubble{
     }
 
     const bg = this.img;
+    if (bg===undefined) return;
     console.log(bg,"bg")
     context.clearRect(0, 0, this.config.width, this.config.height);
     context.drawImage(bg, 0, 0,512,512, 0, 0, this.config.width, this.config.height);

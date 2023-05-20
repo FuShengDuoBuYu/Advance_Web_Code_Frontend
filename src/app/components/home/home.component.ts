@@ -4,9 +4,11 @@ import * as THREE from 'three';
 import io from 'socket.io-client';
 import { environment } from '../../app.module';
 
-//如果报错,那么就从如下位置安装
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
+import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
+import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader";
 import { randInt } from 'three/src/math/MathUtils';
+
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
@@ -33,11 +35,9 @@ export class HomeComponent {
     this.timers = {};
     this.timers['timer'] = setTimeout(
       () => {
-        console.log('timer');
       },5000
     )
     this.socket.connect();
-    console.log(this.socket);
     this.socket.on('connect', () => {
       this.output(
         '<span class="connect-msg">The client has connected with the server. Username: ' +
@@ -46,7 +46,6 @@ export class HomeComponent {
       );
     });
     this.socket.on('chat', (data: { userName: string; message: string }) => {
-      console.log(this.timers, 'timers');
       for(let name in platform.remotePlayers){
         if(name == data.userName){
           let speech = platform.speechBubbles[name];
@@ -191,9 +190,7 @@ export class HomeComponent {
 //platform
 class Platform {
   constructor(platformDiv, socket) {
-
     this.socket = socket;
-
     this.container;
     this.player = {};
     this.animations = {};
@@ -280,7 +277,7 @@ class Platform {
       });
 
       //加入这个模型,设置模型的位置
-      object.position.set(-500, 0, -2000);
+      object.position.set(3422, 0, -2053);
       platform.scene.add(object);
       //设置用户的object就是这个形象
       platform.player.object = object;
@@ -294,14 +291,14 @@ class Platform {
     this.socket.emit('init',{
       rolename: localStorage.getItem('roleName'),
       username: localStorage.getItem('role') + '-' + localStorage.getItem('username'),
-      x: -500,
+      x: 3422,
       y: 0,
-      z: -2000,
+      z: -2053,
       r: 0,
     });
 
     //加载地图
-    this.loadEnvironment(loader);
+    this.loadEnvironment();
     //设置渲染器
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setPixelRatio(window.devicePixelRatio);
@@ -313,8 +310,6 @@ class Platform {
 
     // 设置远程位置同步
 		this.socket.on('remoteData', function(data){
-			// console.log("remoteData");
-			// console.log(data);
 			platform.remoteData = data;
       // 获取this.remotePlayers中的所有key
       var keys = Object.keys(platform.remotePlayers);
@@ -324,7 +319,6 @@ class Platform {
           continue;
         }
         remoteNames.push(data[i].username);
-        console.log(loader,"in remoteData");
         platform.loadRemotePlayer(loader, data[i]);
       }
       // 删除多余的remotePlayers
@@ -334,9 +328,6 @@ class Platform {
           delete platform.remotePlayers[keys[i]];
         }
       }
-      // console.log(remoteNames);
-      // console.log(platform.remotePlayers)
-      // console.log(platform.scene.children)
 		});
 
   }
@@ -353,8 +344,6 @@ class Platform {
       // 如果存在，就仅仅更新位置
       temp_player = this.remotePlayers[data.username];
       if(temp_player.object != null){
-        console.log("exists:");
-        console.log(temp_player);
         temp_player.object.position.set(data.x, data.y, data.z)
         temp_player.object.rotation.y = data.r;
         return;
@@ -395,7 +384,6 @@ class Platform {
   //设置动画
   animate() {
     const dt = this.clock.getDelta();
-    // console.log('animate');
     if (this.player.mixer !== undefined) this.player.mixer.update(dt);
     if (this.player.move !== false){
 
@@ -493,8 +481,6 @@ class Platform {
     this.camera.rotation.x = Math.max(-Math.PI, Math.min(Math.PI, this.camera.rotation.x));
   }
 
-
-
   //设置相机
   set activeCamera(object) {
     this.player.cameras.active = object;
@@ -522,7 +508,6 @@ class Platform {
     this.player.cameras = { front, back, wide, overhead, collect };
     //默认的相机是back
     platform.activeCamera = this.player.cameras.back;
-    console.log(this.player.cameras.active,"this.player.cameras.active")
   }
 
   //移动角色
@@ -540,7 +525,6 @@ class Platform {
       this.player.object.translateX(-dt*400);
     }
     // 共享位置信息
-    // console.log(this.player.object)
     this.socket.emit('move', {
       rolename: localStorage.getItem('roleName'),
       username: localStorage.getItem('role') + '-' + localStorage.getItem('username'),
@@ -552,36 +536,28 @@ class Platform {
   }
 
   //加载环境地图
-  loadEnvironment(loader) {
+  loadEnvironment() {
     const platform = this;
-    loader.load('assets/fbx/town.fbx', function (object) {
+    // 加载obj模型
+    let objLoader = new OBJLoader();
+    let obj = objLoader.load('assets/model/rac_advanced_sample_project.obj', function (object) {
+      object.scale.set(100,100,100);
+      object.position.set(0,0,0);
+      //x轴旋转90度
+      object.rotateX(-Math.PI/2);      
       platform.environment = object;
       platform.colliders = [];
       platform.scene.add(object);
-      object.traverse(function (child) {
-        if ( child.isMesh ) {
-					if (child.name.startsWith("proxy")){
-						platform.colliders.push(child);
-						child.material.visible = false;
-					}else{
-						child.castShadow = true;
-						child.receiveShadow = true;
-					}
-				}
-			} );
-      const tloader = new THREE.CubeTextureLoader();
-			tloader.setPath( `assets/images/` );
-
-			const textureCube = tloader.load( [
-				'px.jpg', 'nx.jpg',
-				'py.jpg', 'ny.jpg',
-				'pz.jpg', 'nz.jpg'
-			] );
-
-			platform.scene.background = textureCube;
-
-			platform.loadNextAnim(loader);
     });
+    // 加载mtl模型
+    let mtlLoader = new MTLLoader();
+    mtlLoader.load('assets/model/rac_advanced_sample_project.mtl', function (materials) {
+      materials.preload();
+      objLoader.setMaterials(materials);
+    }
+    );
+
+
   }
 }
 

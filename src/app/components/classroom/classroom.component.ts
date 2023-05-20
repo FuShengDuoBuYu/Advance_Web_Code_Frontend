@@ -65,7 +65,6 @@ export class ClassroomComponent {
     };
     this.socket = io(url,opts);
     this.socket.connect();
-    console.log(this.socket);
     this.socket.on('connect', () => {
       console.log('connect')
       this.output(

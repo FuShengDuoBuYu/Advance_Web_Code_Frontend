@@ -1,12 +1,15 @@
 <mat-toolbar color="primary" class="toolbar">
   <span>在线教育平台</span>
   <span>按键"W"可以走动,鼠标控制方向,按键"C"进入教室</span>
+    <button mat-icon-button matTooltip="聊天室" (click)="ifShowChat()">
+      <mat-icon>question_answer</mat-icon>
+    </button>
     <button mat-icon-button matTooltip="个人中心" (click)="navigateToPersonalCenter()">
       <mat-icon>personal</mat-icon>
     </button>
 </mat-toolbar>
 
-<div class="chat">
+<div class="chat" id="chat">
   <div class="chat-body">
     <img src="assets/pic/confused.gif"/>
     <div id="console" class="well"></div>
@@ -16,6 +19,54 @@
     <input id="msg" class="input-xlarge" type="text" placeholder="Type something..." [(ngModel)]="message" name="message" />
     <button type="submit" class="btn" id="send">Send</button>
   </form>
+</div>
+
+<div class="classroom-dialog" id="classroom-dialog">
+  <div class="classroom-dialog-title">
+    <span id="teach_building">第一教学楼</span>
+  </div>
+  <div class="classroom-dialog-user">
+    <span id="teach_role">您的身份是:{{role==='student'?'学生,可以进入如下课程':'老师,可以加入或创建课程'}}</span>
+  </div>
+  <div class="classroom-dialog-content">
+    <mat-tab-group *ngIf="role === 'teacher'">
+      <mat-tab label="加入课程">
+        <mat-card class="card" *ngFor="let course of courseList;let i = index" (click)="enterClass(i)">
+          <mat-card-header>
+            <mat-card-title>{{course.title}}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <p>描述: {{course.description}}</p>
+          </mat-card-content>
+        </mat-card>
+      </mat-tab>
+      <mat-tab label="创建课程">
+        <form [formGroup]="createCourseForm" (ngSubmit)="onCreateCourseSubmit()">
+          <mat-form-field appearance="fill" class="mat-form-field">
+            <mat-label>课程名称</mat-label>
+            <input matInput formControlName="courseName">
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="mat-form-field">
+            <mat-label>课程描述</mat-label>
+            <input matInput formControlName="courseDescription">
+          </mat-form-field>
+          <button mat-raised-button color="primary" type="submit" class="button">提交</button>
+        </form>
+      </mat-tab>
+    </mat-tab-group>
+
+    <div class="course-list" *ngIf="role === 'student'">
+      <mat-card class="card" *ngFor="let course of courseList;let i = index" (click)="enterClass(i)">
+        <mat-card-header>
+          <mat-card-title>{{course.title}}</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p>描述: {{course.description}}</p>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
 </div>
 
 <div id="platform"></div>

@@ -5,7 +5,9 @@ import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader";
 import * as THREE from 'three';
 
 export class Platform {
-  constructor(platformDiv, socket) {
+  constructor(platformDiv, socket, classroomDiv) {
+    console.log(classroomDiv)
+    this.classroomDiv = classroomDiv;
     this.socket = socket;
     this.container;
     this.player = {};
@@ -326,10 +328,22 @@ export class Platform {
 
   //移动角色
   movePlayer(direction,dt) {
-    console.log(this.player.object.position)
+    //发生碰撞
     if(this.detectBorderCollisions(this.player.object.position)||this.detectBuildingCollisions(this.player.object.position)){
       console.log('碰撞了')
       return
+    }
+    //进入教学楼门口
+    let gate = this.inBuildingGate(this.player.object.position)
+    if(gate!=0){
+      this.classroomDiv.style.display = 'block'
+      //找到this.classroomDiv里面的id为teaching_building的元素
+      let teach_building_title = this.classroomDiv.querySelector('#teach_building')
+      //设置title
+      teach_building_title.innerHTML = (gate==1?"第一教学楼":"第二教学楼")
+    }
+    else{
+      this.classroomDiv.style.display = 'none'
     }
     if(direction=='w'){
       this.player.object.translateZ(dt*800);
@@ -384,7 +398,6 @@ export class Platform {
     let part1 = this.detectRectCollisions(position,-300,-5550,1830,230,false);
     let part2 = this.detectRectCollisions(position,1830,-5550,3780,-4100,false);
     let part3 = this.detectRectCollisions(position,1830,-1160,6650,230,false);
-    console.log(part1,part2,part3)
     return part1||part2||part3;
   }
 
@@ -413,21 +426,33 @@ export class Platform {
     else{
       if(position.x>minX&&position.x<maxX&&position.z>minZ&&position.z<maxZ){
         //检测穿越的是哪条边
-        if(position.x-minX<10){
+        if(position.x-minX<30){
           position.x = minX;
         }
-        if(maxX-position.x<10){
+        if(maxX-position.x<30){
           position.x = maxX;
         }
-        if(position.z-minZ<10){
+        if(position.z-minZ<30){
           position.z = minZ;
         }
-        if(maxZ-position.z<10){
+        if(maxZ-position.z<30){
           position.z = maxZ;
         }
         return true;
       }
       return false;
     }
+  }
+  //检测是否在教学楼门口
+  inBuildingGate(position){
+    //第一教学楼门口(1820,0,-1620),(1820,0,-2200),(2400,0,-2200),(2400,0,-1620)
+    if(position.x>1820&&position.x<2400&&position.z>-2200&&position.z<-1620){
+      return 1;
+    }
+    //第二教学楼门口(-300,0,-4400),(-300,0,-2950),(-650,0,-2950),(-650,0,-4400)
+    if(position.x>-650&&position.x<-300&&position.z>-4400&&position.z<-2950){
+      return 2;
+    }
+    return 0;
   }
 }

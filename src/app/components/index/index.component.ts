@@ -37,7 +37,6 @@ export class IndexComponent {
 
   onRegisterSubmit() {
     if (this.registrationForm.valid) {
-      //todo: register to server
       const httpOptions = {
         headers: new HttpHeaders({ 'Content-Type': 'application/json' })
       };

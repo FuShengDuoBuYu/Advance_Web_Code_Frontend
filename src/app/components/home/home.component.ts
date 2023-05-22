@@ -4,6 +4,7 @@ import io from 'socket.io-client';
 import { environment } from '../../app.module';
 import { SpeechBubble } from './speech_bublle';
 import { Platform } from './platform';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-home',
@@ -12,16 +13,33 @@ import { Platform } from './platform';
 })
 export class HomeComponent {
   userName: string | null = localStorage.getItem('role') + '-' + localStorage.getItem('username');
+  role: string | null = localStorage.getItem('role');
   roomId: string = 'home';
   message = '';
   socket: any;
-  constructor() {
+  isShowChat = true;
+  courseList = [
+    {'title': '软件工程', 'description':'答辩'},
+    {'title': '计算机网络', 'description':'答辩'},
+    {'title': '计算机组成原理', 'description':'答辩'},
+    {'title': '操作系统', 'description':'答辩'},
+    {'title': '数据库', 'description':'答辩'},
+    {'title': '数据结构', 'description':'答辩'},
+    {'title': '编译原理', 'description':'答辩'},
+    {'title': '计算机图形学', 'description':'答辩'},
+  ];
+  createCourseForm!: FormGroup;
+  constructor(private formBuilder: FormBuilder) {
+    this.createCourseForm = this.formBuilder.group({
+      courseName: ['', [Validators.required]],
+      courseDescription: ['', [Validators.required]],
+    });
   }
   //当页面view加载完成后，执行ngAfterViewInit方法
   ngAfterViewInit() {
     //修改页面的title
     document.title = '主页';
-
+    this.ifShowChat();
     const url = environment.socketPrefix;
     let opts = {
       query: 'roomId=' + this.roomId + '&userName=' + localStorage.getItem('role') + '-' + localStorage.getItem('username'),
@@ -90,7 +108,8 @@ export class HomeComponent {
     });
 
     const platformDiv = document.getElementById('platform');
-    const platform = new Platform(platformDiv, this.socket);
+    const classroomDiv = document.getElementById('classroom-dialog');
+    const platform = new Platform(platformDiv, this.socket, classroomDiv);
     window.platform = platform;
     this.playerMove(platform);
     this.playerView(platform);
@@ -177,5 +196,23 @@ export class HomeComponent {
         platform.playerViewControl(100, 0);
       }
     }, 100);
+  }
+
+  //是否显示聊天框
+  ifShowChat() {
+    this.isShowChat = !this.isShowChat;
+    let chat_element = document.getElementById('chat');
+    chat_element.style.display = this.isShowChat ? 'block' : 'none';
+  }
+
+  //进入课程
+  enterClass(index){
+    //todo:进入课程
+    console.log(this.courseList[index]);
+  }
+
+  //创建课程
+  onCreateCourseSubmit(){
+    console.log(this.courseName);
   }
 }

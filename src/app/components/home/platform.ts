@@ -6,7 +6,6 @@ import * as THREE from 'three';
 
 export class Platform {
   constructor(platformDiv, socket, classroomDiv) {
-    console.log(classroomDiv)
     this.classroomDiv = classroomDiv;
     this.socket = socket;
     this.container;

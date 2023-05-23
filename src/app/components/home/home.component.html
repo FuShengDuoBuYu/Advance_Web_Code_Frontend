@@ -31,43 +31,45 @@
   <div class="classroom-dialog-content">
     <mat-tab-group *ngIf="role === 'teacher'">
       <mat-tab label="加入课程">
-        <mat-card class="card" *ngFor="let course of courseList;let i = index" (click)="enterClass(i)">
+        <mat-card class="card" *ngFor="let course of showCourseList;let i = index" (click)="enterClass(i)">
           <mat-card-header>
-            <mat-card-title>{{course.title}}</mat-card-title>
+            <mat-card-title>{{course.courseName}}</mat-card-title>
           </mat-card-header>
           <mat-card-content>
-            <p>描述: {{course.description}}</p>
+            <p>描述: {{course.courseDescription}}</p>
           </mat-card-content>
         </mat-card>
       </mat-tab>
       <mat-tab label="创建课程">
-        <form [formGroup]="createCourseForm" (ngSubmit)="onCreateCourseSubmit()">
-          <mat-form-field appearance="fill" class="mat-form-field">
-            <mat-label>课程名称</mat-label>
-            <input matInput formControlName="courseName">
-          </mat-form-field>
-
-          <mat-form-field appearance="fill" class="mat-form-field">
-            <mat-label>课程描述</mat-label>
-            <input matInput formControlName="courseDescription">
-          </mat-form-field>
-          <button mat-raised-button color="primary" type="submit" class="button">提交</button>
-        </form>
+        <div [formGroup]="createCourseForm">
+            <mat-form-field appearance="fill" class="mat-form-field">
+              <mat-label>课程名称</mat-label>
+              <input matInput [(ngModel)]="createCourseTitle" name="createCourseTitle" required [ngModelOptions]="{standalone: true}">
+            </mat-form-field>
+            <mat-form-field appearance="fill" class="mat-form-field">
+              <mat-label>课程描述</mat-label>
+              <!-- 绑定到ts的createCourseDescription变量 -->
+              <input matInput [(ngModel)]="createCourseDescription" name="createCourseDescription" required [ngModelOptions]="{standalone: true}">
+            </mat-form-field>
+          <button mat-raised-button color="primary" type="submit" style="display: flex;margin: auto;" (click)="onCreateCourseSubmit()">提交</button>
+        </div>
       </mat-tab>
     </mat-tab-group>
 
     <div class="course-list" *ngIf="role === 'student'">
-      <mat-card class="card" *ngFor="let course of courseList;let i = index" (click)="enterClass(i)">
+      <mat-card class="card" *ngFor="let course of showCourseList;let i = index" (click)="enterClass(i)">
         <mat-card-header>
-          <mat-card-title>{{course.title}}</mat-card-title>
+          <mat-card-title>{{course.courseName}}</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <p>描述: {{course.description}}</p>
+          <p>描述: {{course.courseDescription}}</p>
         </mat-card-content>
       </mat-card>
     </div>
   </div>
 </div>
 
-<div id="platform"></div>
+<div id="platform">
+  
+</div>
 

@@ -78,7 +78,7 @@ export class IndexComponent {
             alert(res.message);
           }
       });
-      console.log(this.loginForm.value);
+      // console.log(this.loginForm.value);
     }
   }
 }

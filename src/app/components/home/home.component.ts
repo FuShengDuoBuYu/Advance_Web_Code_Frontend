@@ -7,7 +7,7 @@ import { Platform } from './platform';
 import {HttpClient,HttpHeaders} from "@angular/common/http";
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Course,Teacher } from './course';
-
+import Recorder from 'js-audio-recorder';
 
 @Component({
   selector: 'app-home',
@@ -27,6 +27,10 @@ export class HomeComponent {
   courseList :Course[] = [];
   showCourseList : Course[] = [];
   createCourseForm: FormGroup;
+
+  recorder: Recorder;
+  decoder: Recorder;
+
   constructor(private formBuilder: FormBuilder,public http:HttpClient) {}
   //当页面view加载完成后，执行ngAfterViewInit方法
   ngAfterViewInit() {
@@ -93,6 +97,14 @@ export class HomeComponent {
         '</span>'
       );
     });
+
+    this.socket.on('speech', (data: { userName: string; message: string }) => {
+      console.log(data);
+      // 原来这么简单。。。。
+      var snd = new Audio(data.message);
+      snd.play();
+    });
+
     this.socket.on('disconnect', () => {
       this.output('<span class="disconnect-msg">The client has disconnected!</span>');
     });
@@ -115,6 +127,32 @@ export class HomeComponent {
       courseName: ['', Validators.required],
       courseDescription: ['', Validators.required]
     });
+
+    this.recorder = new Recorder({
+      sampleBits: 16,         // 采样位数，支持 8 或 16，默认是16
+      sampleRate: 16000,      // 采样率，支持 11025、16000、22050、24000、44100、48000，默认是16000
+      numChannels: 1,         // 声道，支持 1 或 2，默认是1
+      compiling: true,       // 是否边录边转换，默认是false
+    });
+  }
+
+  startRecording() {
+    this.recorder.start();
+  }
+
+  stopRecording() {
+    this.recorder.stop();
+    let blob:Blob = this.recorder.getWAVBlob();
+    // 编码成为字符串
+    const reader = new FileReader();  
+    reader.readAsDataURL(blob);
+    reader.onload = (e) => {
+      this.socket.emit('speech', {
+        roomId: this.roomId,
+        userName: localStorage.getItem('role') + '-' + localStorage.getItem('username'),
+        message: reader.result
+      });
+    }
   }
 
   //观察classroom-dialog元素

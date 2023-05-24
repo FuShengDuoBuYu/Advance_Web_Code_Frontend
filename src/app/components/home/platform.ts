@@ -151,7 +151,7 @@ export class Platform {
     var temp_player = {};
     const platform = this;
     // 处理初始位置的模型，存在bug
-    if (data.x == -3422 && data.y == 0 && data.z == -2053 && data.r == 0) {
+    if (data.x == -500 && data.y == 0 && data.z == -2000 && data.r == 0) {
       return;
     }
     // 检查是否remotePlayers是否已经存在，通过判断username

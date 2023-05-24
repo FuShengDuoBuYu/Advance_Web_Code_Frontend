@@ -9,20 +9,42 @@
     </button>
 </mat-toolbar>
 
-<div class="chat" id="chat">
-  <div class="chat-body">
-    <img src="assets/pic/confused.gif"/>
-    <div id="console" class="well"></div>
+<div [@openClose]="isShowChat ? 'open' : 'closed'" class="chat" id="chat" >
+  <h3 style="color: brown; text-align: center;">欢迎进入聊天室</h3>
+  <div style="margin: 5%;display: flex;">
+    <div class="chat-body">
+      <div *ngFor="let message of messages" style="width: 90%">
+        <div *ngIf="message.type === 'notification'">
+          <div class="chat-body-system">
+            <span>{{message.content}}</span>
+          </div>
+        </div>
+        <div *ngIf="message.type === 'text'">
+          <mat-card class="card">
+            <mat-card-content>{{message.content}}</mat-card-content>
+            <mat-card-footer style="display: flex;width: 100%;justify-content: space-around;">
+              <mat-card-subtitle>{{message.time}}</mat-card-subtitle>
+              <mat-card-subtitle>{{message.username}}</mat-card-subtitle>
+            </mat-card-footer>
+          </mat-card>
+        </div>
+        <div *ngIf="message.type === 'other'">
+          <div class="chat-body-other">
+            <span>{{message.username}}:</span>
+            <span>{{message.content}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <form (ngSubmit)="onSubmit()" style="display: flex;justify-content: space-around;width: 90%;">
+      <input id="msg" class="input-xlarge" type="text" placeholder="请输入内容:" [(ngModel)]="message" name="message" />
+      <!-- <button type="submit" class="btn" id="send">发送</button> -->
+      <button mat-raised-button color="primary" type="submit" id="send">发送</button>
+    </form>
+    <!-- <button mat-raised-button color="primary">开启语音</button> -->
   </div>
-
-  <form class="well form-inline" (ngSubmit)="onSubmit()">
-    <input id="msg" class="input-xlarge" type="text" placeholder="Type something..." [(ngModel)]="message" name="message" />
-    <button type="submit" class="btn" id="send">Send</button>
-  </form>
 </div>
-
-<button (click)="startRecording()">开始录音</button>
-<button (click)="stopRecording()">停止录音</button>
 
 <div class="classroom-dialog" id="classroom-dialog">
   <div class="classroom-dialog-title">

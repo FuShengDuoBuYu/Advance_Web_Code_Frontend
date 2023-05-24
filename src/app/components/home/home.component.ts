@@ -4,15 +4,35 @@ import io from 'socket.io-client';
 import { environment } from '../../app.module';
 import { SpeechBubble } from './speech_bublle';
 import { Platform } from './platform';
-import {HttpClient,HttpHeaders} from "@angular/common/http";
+import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { Course,Teacher } from './course';
+import { Course, Teacher } from './course';
 import Recorder from 'js-audio-recorder';
-
+import { trigger, state, style, animate, transition } from '@angular/animations';
+import { Message } from './message';
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css']
+  styleUrls: ['./home.component.css'],
+  animations: [
+    trigger('openClose', [
+      // animation triggers go here
+      state('open', style({
+        width: '30%',
+        height: '50%',
+      })),
+      state('closed', style({
+        width: '0%',
+        height: '0%',
+      })),
+      transition('open => closed', [
+        animate('0.3s')
+      ]),
+      transition('closed => open', [
+        animate('0.3s')
+      ]),
+    ])
+  ]
 })
 export class HomeComponent {
   userName: string | null = localStorage.getItem('role') + '-' + localStorage.getItem('username');
@@ -20,18 +40,21 @@ export class HomeComponent {
   roomId: string = 'home';
   message = '';
   socket: any;
+  //聊天相关
   isShowChat = true;
+  messages: Message[] = [];
+  //开课相关
   createCourseTitle = "";
   createCourseDescription = "";
   lastTeachingBuilding = 0;
-  courseList :Course[] = [];
-  showCourseList : Course[] = [];
+  courseList: Course[] = [];
+  showCourseList: Course[] = [];
   createCourseForm: FormGroup;
-
+  //录音相关
   recorder: Recorder;
   decoder: Recorder;
 
-  constructor(private formBuilder: FormBuilder,public http:HttpClient) {}
+  constructor(private formBuilder: FormBuilder, public http: HttpClient) { }
   //当页面view加载完成后，执行ngAfterViewInit方法
   ngAfterViewInit() {
     //修改页面的title
@@ -51,9 +74,10 @@ export class HomeComponent {
     this.socket.connect();
     this.socket.on('connect', () => {
       this.output(
-        '<span class="connect-msg">The client has connected with the server. Username: ' +
-        this.userName + ' Room: ' + this.roomId +
-        '</span>'
+        // '<span class="connect-msg">The client has connected with the server. Username: ' +
+        // this.userName + ' Room: ' + this.roomId +
+        // '</span>'
+        "您已连接到服务器!",localStorage.getItem('username'),"connect-msg"
       );
     });
     this.socket.on('chat', (data: { userName: string; message: string }) => {
@@ -90,11 +114,12 @@ export class HomeComponent {
       }
 
       this.output(
-        '<span class="username-msg">' +
-        data.userName +
-        ': ' +
-        data.message +
-        '</span>'
+        // '<span class="username-msg">' +
+        // data.userName +
+        // ': ' +
+        // data.message +
+        // '</span>'
+        data.message, data.userName, "","text"
       );
     });
 
@@ -104,7 +129,7 @@ export class HomeComponent {
     });
 
     this.socket.on('disconnect', () => {
-      this.output('<span class="disconnect-msg">The client has disconnected!</span>');
+      this.output("您已断开连接!",localStorage.getItem('username'),"disconnect-msg");
     });
     this.socket.on('reconnect_attempt', (attempts: string) => {
       console.log('Try to reconnect at ' + attempts + ' attempt(s).');
@@ -120,7 +145,7 @@ export class HomeComponent {
 
   }
 
-  ngOnInit(){
+  ngOnInit() {
     this.createCourseForm = this.formBuilder.group({
       courseName: ['', Validators.required],
       courseDescription: ['', Validators.required]
@@ -138,12 +163,12 @@ export class HomeComponent {
     this.recorder.start();
     const that = this;
     // 设置一个1s的间距
-    setInterval(function() {
+    setInterval(function () {
       that.recorder.stop();
-      let blob:Blob = that.recorder.getWAVBlob();
+      let blob: Blob = that.recorder.getWAVBlob();
       that.recorder.start();
       // 编码成为字符串
-      const reader = new FileReader();  
+      const reader = new FileReader();
       reader.readAsDataURL(blob);
       reader.onload = (e) => {
         that.socket.emit('speech', {
@@ -157,9 +182,9 @@ export class HomeComponent {
 
   stopRecording() {
     this.recorder.stop();
-    let blob:Blob = this.recorder.getWAVBlob();
+    let blob: Blob = this.recorder.getWAVBlob();
     // 编码成为字符串
-    const reader = new FileReader();  
+    const reader = new FileReader();
     reader.readAsDataURL(blob);
     reader.onload = (e) => {
       this.socket.emit('speech', {
@@ -178,7 +203,7 @@ export class HomeComponent {
         if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
           // style属性发生变化,获取targetElement的id为teach_building的元素中的文字
           let buildingName = targetElement.querySelector('#teach_building')!.innerHTML;
-          this.lastTeachingBuilding = (buildingName=="第一教学楼"?1:2)
+          this.lastTeachingBuilding = (buildingName == "第一教学楼" ? 1 : 2)
           this.getCourseList(this.lastTeachingBuilding);
         }
       }
@@ -207,11 +232,22 @@ export class HomeComponent {
     this.message = '';
   }
 
-  output(message: string) {
-    // 获取当前时间
-    const currentTime = `[${new Date().toLocaleTimeString()}]`;
-    const element = `<div>${currentTime} ${message}</div>`;
-    document.getElementById('console')!.insertAdjacentHTML('beforebegin', element);
+  output(msg: string,username:string,other:string = '',type:string = 'notification') {
+    let message = new Message(
+      //当前时间
+      new Date().toLocaleTimeString(),
+      //消息内容
+      msg,
+      //用户名
+      username,
+      //身份
+      localStorage.getItem('role'),
+      //其他
+      other,
+      //类型
+      type
+    );
+    this.messages.push(message);
   }
 
   // 点击按钮后跳转到个人中心
@@ -272,8 +308,6 @@ export class HomeComponent {
   //是否显示聊天框
   ifShowChat() {
     this.isShowChat = !this.isShowChat;
-    let chat_element = document.getElementById('chat');
-    chat_element.style.display = this.isShowChat ? 'block' : 'none';
   }
 
   //进入课程
@@ -284,9 +318,9 @@ export class HomeComponent {
 
   //创建课程
   onCreateCourseSubmit() {
-    
+
     const httpOptions = {
-      headers: new HttpHeaders({ 'Content-Type': 'application/json','token':localStorage.getItem("token")! }),
+      headers: new HttpHeaders({ 'Content-Type': 'application/json', 'token': localStorage.getItem("token")! }),
     };
     const api = environment.apiPrefix + "/user/createCourse";
     const jsonObject = {
@@ -297,13 +331,13 @@ export class HomeComponent {
     };
     console.log(jsonObject);
     this.http.post(api, jsonObject, httpOptions).subscribe((res: any) => {
-      if(res.success){
+      if (res.success) {
         alert("创建成功");
         this.getCourseList(this.lastTeachingBuilding);
         this.createCourseTitle = "";
         this.createCourseDescription = "";
       }
-      else{
+      else {
         alert(res.message);
       }
     });
@@ -314,13 +348,13 @@ export class HomeComponent {
     this.showCourseList = [];
     this.courseList = [];
     const httpOptions = {
-      headers: new HttpHeaders({ 'Content-Type': 'application/json','token':localStorage.getItem("token")! }),
+      headers: new HttpHeaders({ 'Content-Type': 'application/json', 'token': localStorage.getItem("token")! }),
     };
     const api = environment.apiPrefix + "/user/getCourseByBuilding/" + buildingIndex;
-    this.http.get(api,httpOptions).subscribe((res: any) => {
-      if(res.success){
+    this.http.get(api, httpOptions).subscribe((res: any) => {
+      if (res.success) {
         for (let i = 0; i < res.data.length; i++) {
-          let teacher = new Teacher(res.data[i].teacher.userId, res.data[i].teacher.username,res.data[i].role);
+          let teacher = new Teacher(res.data[i].teacher.userId, res.data[i].teacher.username, res.data[i].role);
           let course = new Course(res.data[i].courseId, res.data[i].courseName, res.data[i].courseDescription,
             res.data[i].building, res.data[i].isOver, teacher);
           this.courseList.push(course);
@@ -331,7 +365,7 @@ export class HomeComponent {
           }
         }
       }
-      else{
+      else {
         alert(res.message);
       }
     });

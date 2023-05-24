@@ -75,8 +75,6 @@ export class Platform {
       platform.player.mixer = object.mixer;
       platform.player.root = object.mixer.getRoot();
       object.name = localStorage.getItem('roleName');
-      // //设置人物的动画
-      // pla.setPlayerAction(platform.playerControl, "Idle")
       //添加对应内容
       object.traverse(function (child) {
         if (child.isMesh) {
@@ -117,7 +115,7 @@ export class Platform {
     });
 
     //加载地图
-    this.loadEnvironment();
+    // this.loadEnvironment();
     //设置渲染器
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setPixelRatio(window.devicePixelRatio);
@@ -207,6 +205,7 @@ export class Platform {
 
   //设置动画
   animate() {
+    //设置本人和远程人物的走动或者静止动画
     const dt = this.clock.getDelta();
     if (this.player.mixer !== undefined) this.player.mixer.update(dt);
     for(let i in this.remotePlayers){

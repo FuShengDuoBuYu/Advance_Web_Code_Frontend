@@ -138,6 +138,24 @@ export class HomeComponent {
 
   startRecording() {
     this.recorder.start();
+    const that = this;
+    // 设置一个1s的间距
+    setInterval(function() {
+      that.recorder.stop();
+      let blob:Blob = that.recorder.getWAVBlob();
+      that.recorder.start();
+      // 编码成为字符串
+      const reader = new FileReader();  
+      reader.readAsDataURL(blob);
+      reader.onload = (e) => {
+        that.socket.emit('speech', {
+          roomId: that.roomId,
+          userName: localStorage.getItem('role') + '-' + localStorage.getItem('username'),
+          message: reader.result
+        });
+      }
+      // that.recorder.start();
+    }, 2000);
   }
 
   stopRecording() {

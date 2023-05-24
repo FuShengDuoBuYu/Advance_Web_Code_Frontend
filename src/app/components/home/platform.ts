@@ -74,7 +74,9 @@ export class Platform {
       object.mixer = new THREE.AnimationMixer(object);
       platform.player.mixer = object.mixer;
       platform.player.root = object.mixer.getRoot();
-      object.name = "FireFighter";
+      object.name = localStorage.getItem('roleName');
+      // //设置人物的动画
+      // pla.setPlayerAction(platform.playerControl, "Idle")
       //添加对应内容
       object.traverse(function (child) {
         if (child.isMesh) {
@@ -130,7 +132,7 @@ export class Platform {
       var keys = Object.keys(platform.remotePlayers);
       var remoteNames = [];
       for (let i = 0; i < data.length; i++) {
-        if (data[i].username == localStorage.getItem('role') + '-' + localStorage.getItem('username')) {
+        if (data[i].username == (localStorage.getItem('role') + '-' + localStorage.getItem('username'))) {
           continue;
         }
         remoteNames.push(data[i].username);
@@ -150,62 +152,69 @@ export class Platform {
   loadRemotePlayer(loader, data) {
     var temp_player = {};
     const platform = this;
-    // 处理初始位置的模型，存在bug
-    if (data.x == -3422 && data.y == 0 && data.z == -2053 && data.r == 0) {
-      return;
-    }
     // 检查是否remotePlayers是否已经存在，通过判断username
     if (this.remotePlayers[data.username]!=undefined && this.remotePlayers[data.username].hasOwnProperty('object')) {
       // 如果存在，就仅仅更新位置
       temp_player = this.remotePlayers[data.username];
       if(temp_player.object != null){
-        temp_player.object.position.set(data.x, data.y, data.z)
-        temp_player.object.rotation.y = data.r;
-        return;
+        //当位置变化时,更新位置,设置走动动画
+        if(temp_player.object.position.x != data.x || temp_player.object.position.z != data.z || temp_player.object.rotation.y != data.r){
+          temp_player.object.position.set(data.x, data.y, data.z)
+          temp_player.object.rotation.y = data.r;
+          if(temp_player.action != 'Walking')
+            this.setPlayerAction(temp_player, 'Walking');
+        }
+        else{
+          if(temp_player.action != 'Idle')
+            this.setPlayerAction(temp_player, 'Idle');
+        }
       }
+      return;
     }
-      loader.load(`assets/fbx/people/`+data.rolename+`.fbx`, function (object) {
-        object.mixer = new THREE.AnimationMixer(object);
-        temp_player.mixer = object.mixer;
-        temp_player.root = object.mixer.getRoot();
-        object.name = data.rolename;
-        //添加对应内容
+    
+    temp_player.object = null;
+    this.remotePlayers[data.username] = temp_player;
+    loader.load(`assets/fbx/people/`+data.rolename+`.fbx`, function (object) {
+      object.mixer = new THREE.AnimationMixer(object);
+      temp_player.mixer = object.mixer;
+      temp_player.root = object.mixer.getRoot();
+      object.name = data.rolename;
+      //添加对应内容
+      object.traverse(function (child) {
+        if (child.isMesh) {
+          child.material.map = null;
+          child.castShadow = true;
+          child.receiveShadow = false;
+        }
+      });
+      //贴图纹理
+      const texture = new THREE.TextureLoader().load(`assets/images/SimplePeople_`+data.rolename+`_Brown.png`, (texture) => {
         object.traverse(function (child) {
           if (child.isMesh) {
-            child.material.map = null;
-            child.castShadow = true;
-            child.receiveShadow = false;
+            child.material.map = texture;
+            child.material.needsUpdate = true;
           }
         });
-        //贴图纹理
-        const texture = new THREE.TextureLoader().load(`assets/images/SimplePeople_`+data.rolename+`_Brown.png`, (texture) => {
-          object.traverse(function (child) {
-            if (child.isMesh) {
-              child.material.map = texture;
-              child.material.needsUpdate = true;
-            }
-          });
-        });
-
-        //加入这个模型,设置模型的位置
-        object.position.set(data.x, data.y, data.z);
-        platform.scene.add(object);
-        //设置用户的object就是这个形象
-        temp_player.object = object;
       });
-      this.remotePlayers[data.username] = temp_player;
+
+      //加入这个模型,设置模型的位置
+      object.position.set(data.x, data.y, data.z);
+      platform.scene.add(object);
+      //设置用户的object就是这个形象
+      temp_player.object = object;
+    });
   }
 
   //设置动画
   animate() {
     const dt = this.clock.getDelta();
     if (this.player.mixer !== undefined) this.player.mixer.update(dt);
-    if (this.player.move !== false){
-
-      this.movePlayer(this.player.forward,dt);
+    for(let i in this.remotePlayers){
+      if(this.remotePlayers[i].mixer !== undefined) this.remotePlayers[i].mixer.update(dt);
     }
-    else{
 
+    if (this.player.move !== false){
+      this.movePlayer(this.player.forward,dt);
     }
     //做一下相机的位置的线性插值
     if (this.player.cameras != undefined && this.player.cameras.active != undefined) {
@@ -215,7 +224,7 @@ export class Platform {
       this.camera.lookAt(pos);
     }
 
-    //确保太阳光的位置保证定向光线不断指向人物000
+    //确保太阳光的位置保证定向光线不断指向人物
     if (this.sun != undefined) {
       this.sun.position.x = this.player.object.position.x;
       this.sun.position.y = this.player.object.position.y + 200;
@@ -246,15 +255,14 @@ export class Platform {
     });
   }
 
-  //get and set Action
-  set action(name) {
-    //设置一个动作
-    const action = this.player.mixer.clipAction(this.animations[name]);
+  setPlayerAction(player,name) {
+    //设置动作
+    const action = player.mixer.clipAction(this.animations[name]);
     action.time = 0.5;
     //停止所有动作
-    this.player.mixer.stopAllAction();
-    this.player.action = name;
-    this.player.actionTime = Date.now();
+    player.mixer.stopAllAction();
+    player.action = name;
+    player.actionTime = Date.now();
     action.fadeIn(0);
     action.play();
   }
@@ -271,7 +279,7 @@ export class Platform {
       this.player.forward = 'w';
       this.player.move = true;
       if(this.actionAnimation!=='Walking'){
-        window.platform.action = 'Walking'
+        this.setPlayerAction(this.player,'Walking')
         this.actionAnimation = 'Walking'
       }
     }
@@ -279,7 +287,7 @@ export class Platform {
       this.player.forward = 'stop';
       this.player.move = false;
       if(this.actionAnimation!=='Idle'){
-        window.platform.action = 'Idle'
+        this.setPlayerAction(this.player,'Idle')
         this.actionAnimation = 'Idle'
       }
     }

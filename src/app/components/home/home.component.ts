@@ -99,8 +99,6 @@ export class HomeComponent {
     });
 
     this.socket.on('speech', (data: { userName: string; message: string }) => {
-      console.log(data);
-      // 原来这么简单。。。。
       var snd = new Audio(data.message);
       snd.play();
     });
@@ -154,7 +152,6 @@ export class HomeComponent {
           message: reader.result
         });
       }
-      // that.recorder.start();
     }, 2000);
   }
 
@@ -230,9 +227,6 @@ export class HomeComponent {
         case 87: // w
           platform.playerControl('w');
           break;
-        //按住c后进入classroom界面
-        case 67: // c
-          window.location.href = '/classroom';
       }
     }, false);
     //松手后停止

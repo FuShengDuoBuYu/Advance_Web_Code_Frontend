@@ -132,13 +132,18 @@ export class HomeComponent {
     });
 
     const platformDiv = document.getElementById('platform');
+    //设置platformDiv的pointLock
+    platformDiv?.addEventListener('click', () => {
+      platformDiv.requestPointerLock();
+    });
     const classroomDiv = document.getElementById('classroom-dialog');
     this.observeClassroomDiv(classroomDiv!);
     const platform = new Platform(platformDiv, this.socket, classroomDiv);
     window.platform = platform;
     this.playerMove(platform);
-    this.playerView(platform);
-
+    document.addEventListener('mousemove', (event) => {
+      this.playerView(platform, event, platformDiv);
+    });
   }
 
   ngOnInit() {
@@ -280,36 +285,14 @@ export class HomeComponent {
   }
 
   //监听用户的鼠标视角
-  playerView(platform) {
-    //监听一次鼠标移动的距离
-    let lastX = 0;
-    let lastY = 0;
-    let isMouseMove = false;
-    document.addEventListener('mousemove', (event) => {
-      if (isMouseMove) return;
-      isMouseMove = true;
-      const x = event.clientX;
-      const y = event.clientY;
-      const dx = x - lastX;
-      const dy = y - lastY;
-      lastX = x;
-      lastY = y;
-      platform.playerViewControl(dx, dy);
-      setTimeout(() => {
-        isMouseMove = false;
-      }, 100);
-    }, false);
-    //每100ms监听一次鼠标的位置
-    setInterval(() => {
-      //获取当前鼠标的位置
-      if (isMouseMove) return;
-      if (lastX < 10) {
-        platform.playerViewControl(-100, 0);
-      }
-      if (innerWidth - lastX < 10) {
-        platform.playerViewControl(100, 0);
-      }
-    }, 100);
+  playerView(platform, event, platformDiv) {
+    //判断当前鼠标是否被锁定
+    if(document.pointerLockElement === platformDiv || document.mozPointerLockElement === platformDiv) {
+      //鼠标被锁定
+      let movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+      let movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+      platform.playerViewControl(movementX, movementY);
+    }
   }
 
   //是否显示聊天框

@@ -26,7 +26,6 @@ export class Platform {
     this.container = document.createElement('div');
     this.container.style.width = '100%';
     this.container.style.height = window.innerHeight * 0.9 + 'px';
-    this.container.style.cursor = 'none';
     platformDiv.appendChild(this.container);
 
     const platform = this;
@@ -115,7 +114,7 @@ export class Platform {
     });
 
     //加载地图
-    // this.loadEnvironment();
+    this.loadEnvironment();
     //设置渲染器
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setPixelRatio(window.devicePixelRatio);
@@ -294,13 +293,8 @@ export class Platform {
 
   //设置鼠标带来的视角控制
   playerViewControl(dx,dy){
-    dy = -dy;
-    dx = -dx;
-    this.player.object.rotation.y += dx * 0.002;
-    this.player.object.rotation.y = Math.max(-Math.PI, Math.min(Math.PI, this.player.object.rotation.y));
-
-    this.camera.rotation.x += dy * 0.002;
-    this.camera.rotation.x = Math.max(-Math.PI, Math.min(Math.PI, this.camera.rotation.x));
+    this.player.object.rotation.y -= dx * 0.002;
+    this.camera.rotation.x -= dy * 0.002;
   }
 
   //设置相机

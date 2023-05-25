@@ -1,7 +1,7 @@
 //@ts-nocheck
 import * as THREE from 'three';
 export class SpeechBubble{
-  constructor(game, msg, size=1){
+  constructor(game, msg, size=1,type="text"){
     this.config = { font:'Calibri', size:24, padding:10, colour:'#222', width:256, height:256 };
 
     const planeGeometry = new THREE.PlaneGeometry(size, size);
@@ -22,7 +22,7 @@ export class SpeechBubble{
         self.mesh.material.map = texture;
         self.mesh.material.transparent = true;
         self.mesh.material.needsUpdate = true;
-        if (msg!==undefined) self.update(msg);
+        if (msg!==undefined) self.update(msg,type);
       },
 
       // onProgress callback currently not supported
@@ -35,7 +35,8 @@ export class SpeechBubble{
     );
   }
 
-  update(msg){
+  update(msg,type){
+    console.log(type);
     if (this.mesh===undefined) return;
 
     let context = this.context;
@@ -54,7 +55,18 @@ export class SpeechBubble{
     if (bg===undefined) return;
     context.clearRect(0, 0, this.config.width, this.config.height);
     context.drawImage(bg, 0, 0,512,512, 0, 0, this.config.width, this.config.height);
-    this.wrapText(msg, context);
+    if(type=="text") this.wrapText(msg, context);
+    //将base64转为ImageBitmap
+    
+
+    if(type=="image"){
+      const img = new Image();
+      img.src = msg;
+      let that = this;
+      img.onload = function(){
+        context.drawImage(img, 0, 0,512,512, 0, 0, that.config.width, that.config.height);
+      }
+    }
 
     this.mesh.material.map.needsUpdate = true;
   }

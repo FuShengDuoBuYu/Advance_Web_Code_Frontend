@@ -2,14 +2,15 @@
 import { Component } from '@angular/core';
 import io from 'socket.io-client';
 import { environment } from '../../app.module';
-import { SpeechBubble } from './speech_bublle';
+import { SpeechBubble } from '../speech_bublle';
 import { Platform } from './platform';
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { Course, Teacher } from './course';
+import { Course, Teacher } from '../course';
 import Recorder from 'js-audio-recorder';
 import { trigger, state, style, animate, transition } from '@angular/animations';
-import { Message } from './message';
+import { Message } from '../message';
+import * as imageConversion from 'image-conversion';
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
@@ -74,52 +75,47 @@ export class HomeComponent {
     this.socket.connect();
     this.socket.on('connect', () => {
       this.output(
-        // '<span class="connect-msg">The client has connected with the server. Username: ' +
-        // this.userName + ' Room: ' + this.roomId +
-        // '</span>'
         "您已连接到服务器!",localStorage.getItem('username'),"connect-msg"
       );
     });
-    this.socket.on('chat', (data: { userName: string; message: string }) => {
+
+    //接收到聊天消息
+    this.socket.on('chat', (data: { userName: string; message: string,type:string }) => {
+      //为romatePlayer添加speechBubble
       for (let name in platform.remotePlayers) {
         if (name == data.userName) {
           let speech = platform.speechBubbles[name];
           if (speech !== undefined) {
-            speech.update(data.message);
+            speech.update(data.message,data.type);
           } else {
-            platform.speechBubbles[name] = new SpeechBubble(platform, data.message, 150);
+            platform.speechBubbles[name] = new SpeechBubble(platform, data.message, 150,data.type);
             platform.speechBubbles[name].player = platform.remotePlayers[name];
             this.timers[name] = setTimeout(function () {
               platform.speechBubbles[name].mesh.parent.remove(platform.speechBubbles[name].mesh);
               delete platform.speechBubbles[name];
             }, 5000);
-            platform.speechBubbles[name].update(data.message)
+            platform.speechBubbles[name].update(data.message,data.type)
           }
         }
       }
+      //为本地player添加speechBubble
       let name = data.userName;
       if (data.userName == localStorage.getItem('role') + '-' + localStorage.getItem('username')) {
         let speech = platform.speechBubbles[name];
         if (speech !== undefined) {
-          speech.update(data.message);
+          speech.update(data.message,data.type);
         } else {
-          platform.speechBubbles[name] = new SpeechBubble(platform, data.message, 150);
+          platform.speechBubbles[name] = new SpeechBubble(platform, data.message, 150,data.type);
           platform.speechBubbles[name].player = platform.player;
           this.timers[name] = setTimeout(function () {
             platform.speechBubbles[name].mesh.parent.remove(platform.speechBubbles[name].mesh);
             delete platform.speechBubbles[name];
           }, 5000);
-          platform.speechBubbles[name].update(data.message)
+          platform.speechBubbles[name].update(data.message,data.type)
         }
       }
-
       this.output(
-        // '<span class="username-msg">' +
-        // data.userName +
-        // ': ' +
-        // data.message +
-        // '</span>'
-        data.message, data.userName, "","text"
+        data.message, data.userName, "",data.type
       );
     });
 
@@ -226,10 +222,21 @@ export class HomeComponent {
     const jsonObject = {
       userName: this.userName,
       message: this.message,
-      roomId: this.roomId
+      roomId: this.roomId,
+      type: 'text'
     };
     this.socket.emit('chat', jsonObject);
     this.message = '';
+  }
+
+  sendImageMessage(imageMessage:string,) {
+    const jsonObject = {
+      userName: this.userName,
+      message: imageMessage,
+      roomId: this.roomId,
+      type: 'image'
+    };
+    this.socket.emit('chat', jsonObject);
   }
 
   output(msg: string,username:string,other:string = '',type:string = 'notification') {
@@ -239,9 +246,9 @@ export class HomeComponent {
       //消息内容
       msg,
       //用户名
-      username,
+      username.split('-')[1],
       //身份
-      localStorage.getItem('role'),
+      username.split('-')[0],
       //其他
       other,
       //类型
@@ -369,5 +376,18 @@ export class HomeComponent {
         alert(res.message);
       }
     });
+  }
+
+  //获取用户输入的图片文件
+  view(){
+    const file = document.getElementById('demo').files[0];
+    console.log(file);
+    imageConversion.compressAccurately(file,200).then(res=>{
+      //The res in the promise is a compressed Blob type (which can be treated as a File type) file;
+      //make the compressed file into base64 format
+      imageConversion.filetoDataURL(res).then(res2=>{
+        this.sendImageMessage(res2);
+      })
+    })
   }
 }

@@ -24,6 +24,7 @@
     "@angular/platform-browser-dynamic": "^15.2.0",
     "@angular/router": "^15.2.0",
     "echarts": "^5.4.2",
+    "image-conversion": "^2.1.1",
     "js-audio-recorder": "^1.0.7",
     "jwt-decode": "^3.1.2",
     "ngx-echarts": "^15.0.3",
@@ -34,6 +35,7 @@
     "three-orbitcontrols-ts": "^0.1.2",
     "three.js": "^0.77.1",
     "tslib": "^2.3.0",
+    "viewerjs": "^1.11.3",
     "zone.js": "~0.12.0"
   },
   "devDependencies": {

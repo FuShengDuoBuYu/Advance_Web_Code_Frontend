@@ -38,3 +38,7 @@ export type Cameras = {
   chat: THREE.Object3D;
 }
 
+export type chatMessage = {
+  role: string;
+  content: string;
+}

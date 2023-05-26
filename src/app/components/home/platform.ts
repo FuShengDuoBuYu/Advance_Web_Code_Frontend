@@ -114,7 +114,7 @@ export class Platform {
     });
 
     //加载地图
-    this.loadEnvironment();
+    // this.loadEnvironment();
     //设置渲染器
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setPixelRatio(window.devicePixelRatio);
@@ -168,7 +168,7 @@ export class Platform {
       }
       return;
     }
-    
+
     temp_player.object = null;
     this.remotePlayers[data.username] = temp_player;
     loader.load(`assets/fbx/people/`+data.rolename+`.fbx`, function (object) {
@@ -368,7 +368,7 @@ export class Platform {
       object.scale.set(100,100,100);
       object.position.set(0,0,0);
       //x轴旋转90度
-      object.rotateX(-Math.PI/2);      
+      object.rotateX(-Math.PI/2);
       platform.environment = object;
       platform.colliders = [];
       platform.scene.add(object);

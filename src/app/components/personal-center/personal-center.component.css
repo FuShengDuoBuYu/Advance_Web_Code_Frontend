@@ -1,16 +1,25 @@
-/*.container1{
-  width: 100%;
+.chart-container{
+  position: absolute;
+  width: 800px;
+  height: 400px;
 }
 
-.al-left{
-  float: left;
-  max-width: 15vw;
+.container{
+  width: 800px;
+  height: 800px;
 }
 
-.al-right{
-  float: right;
-  max-width: 85vw;
-}*/
+.content{
+  width: 800px;
+  height: 800px;
+}
+
+.nav-style{
+  font-family: 华文行楷;
+  font-weight: normal;
+  font-size: 14px;
+}
+
 .center-spacer {
   height: 10%;
   flex: 1 1 auto;
@@ -28,3 +37,5 @@
 mat-drawer {
   width: 200px;
 }
+
+

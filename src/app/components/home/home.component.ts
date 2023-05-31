@@ -11,7 +11,6 @@ import Recorder from 'js-audio-recorder';
 import { trigger, state, style, animate, transition } from '@angular/animations';
 import { Message } from '../message';
 import * as imageConversion from 'image-conversion';
-import {chatMessage} from "../../type";
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
@@ -39,7 +38,7 @@ import {chatMessage} from "../../type";
 export class HomeComponent {
   userName: string | null = localStorage.getItem('role') + '-' + localStorage.getItem('username');
   role: string | null = localStorage.getItem('role');
-  roomId: number = 1;
+  roomId: string = 'home';
   message = '';
   socket: any;
   //聊天相关
@@ -54,16 +53,7 @@ export class HomeComponent {
   createCourseForm: FormGroup;
   //录音相关
   recorder: Recorder;
-  decoder: Recorder
-  robotCommand: string = '/robot';
-  assistantRole: string = 'assistant';
-  userRole: string = 'user';
-  initChatMessage: chatMessage = {
-    role: this.assistantRole,
-    content: '你好，我是机器人小助手，有什么可以帮助你的吗？',
-  }
-  //之前的信息
-  dataList: chatMessage[] = [this.initChatMessage];
+  decoder: Recorder;
 
   constructor(private formBuilder: FormBuilder, public http: HttpClient) { }
   //当页面view加载完成后，执行ngAfterViewInit方法
@@ -128,10 +118,6 @@ export class HomeComponent {
         data.message, data.userName, "",data.type
       );
     });
-
-    this.socket.on('chatGPT',(data:{message:string})=>{
-      console.log(data.message)
-    })
 
     this.socket.on('speech', (data: { userName: string; message: string }) => {
       var snd = new Audio(data.message);
@@ -231,15 +217,10 @@ export class HomeComponent {
   }
 
   onSubmit() {
-    this.sendMessage();
     // 获取到表单里的数据
-    if (this.message.startsWith(this.robotCommand)){
-      let content = this.message.split(this.robotCommand)[1];
-      this.socket.emit('chatGPT',{
-        dataList: this.dataList,
-        message: content,
-      })
-    }
+    console.log(this.userName);
+    console.log(this.message);
+    this.sendMessage();
   }
 
   sendMessage() {

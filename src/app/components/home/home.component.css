@@ -7,8 +7,6 @@
 .chat{
   position: absolute;
   left: 5%;
-  width: 30%;
-  height: 50%;
   bottom: 5%;
   background: #eeeeee;
   opacity: 0.8;
@@ -87,4 +85,9 @@ form button { width: 19%; background: rgb(130, 224, 255); border: none; padding:
 
 .mat-form-field {
   width: 95%;
+}
+
+::-webkit-scrollbar {
+  /*隐藏滚轮*/
+  display: none;
 }

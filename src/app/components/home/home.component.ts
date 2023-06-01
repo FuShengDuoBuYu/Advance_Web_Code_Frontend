@@ -19,8 +19,8 @@ import * as imageConversion from 'image-conversion';
     trigger('openClose', [
       // animation triggers go here
       state('open', style({
-        width: '30%',
-        height: '50%',
+        width: '50%',
+        height: '60%',
       })),
       state('closed', style({
         width: '0%',
@@ -38,12 +38,13 @@ import * as imageConversion from 'image-conversion';
 export class HomeComponent {
   userName: string | null = localStorage.getItem('role') + '-' + localStorage.getItem('username');
   role: string | null = localStorage.getItem('role');
-  roomId: string = 'home';
+  roomId: number = 1;
   message = '';
   socket: any;
   //聊天相关
   isShowChat = true;
   messages: Message[] = [];
+  robotMessages: Message[] = [];
   //开课相关
   createCourseTitle = "";
   createCourseDescription = "";
@@ -54,7 +55,7 @@ export class HomeComponent {
   //录音相关
   recorder: Recorder;
   decoder: Recorder;
-
+  recordInterval: any;
   constructor(private formBuilder: FormBuilder, public http: HttpClient) { }
   //当页面view加载完成后，执行ngAfterViewInit方法
   ngAfterViewInit() {
@@ -130,7 +131,9 @@ export class HomeComponent {
     this.socket.on('reconnect_attempt', (attempts: string) => {
       console.log('Try to reconnect at ' + attempts + ' attempt(s).');
     });
-
+    this.socket.on("AI_assistant", (data: { message: string }) => {
+      console.log(data.message);
+    });
     const platformDiv = document.getElementById('platform');
     //设置platformDiv的pointLock
     platformDiv?.addEventListener('click', () => {
@@ -163,8 +166,7 @@ export class HomeComponent {
   startRecording() {
     this.recorder.start();
     const that = this;
-    // 设置一个1s的间距
-    setInterval(function () {
+    this.recordInterval = setInterval(function () {
       that.recorder.stop();
       let blob: Blob = that.recorder.getWAVBlob();
       that.recorder.start();
@@ -183,6 +185,7 @@ export class HomeComponent {
 
   stopRecording() {
     this.recorder.stop();
+    clearInterval(this.recordInterval);
     let blob: Blob = this.recorder.getWAVBlob();
     // 编码成为字符串
     const reader = new FileReader();
@@ -224,14 +227,59 @@ export class HomeComponent {
   }
 
   sendMessage() {
-    const jsonObject = {
+
+    //普通消息
+    if(this.message.indexOf('/robot')==-1){
+      const jsonObject = {
+        userName: this.userName,
+        message: this.message,
+        roomId: this.roomId,
+        type: 'text'
+      };
+      this.socket.emit('chat', jsonObject);
+      this.message = '';
+    }
+    //退出的消息
+    else if(this.message.indexOf('/exit')!=-1){
+
+    }
+    //机器人消息
+    else{
+      const jsonObject = {
       userName: this.userName,
       message: this.message,
-      roomId: this.roomId,
-      type: 'text'
-    };
-    this.socket.emit('chat', jsonObject);
-    this.message = '';
+      // role:'user',
+      dataList : [
+        {"role":"system","content":"您好，我是智能助手，有什么可以帮您？"},
+        {"role":"user","content":"我想要报修"},
+        {"role":"assistant","content":"请问您是哪栋楼的？"},
+        {"role":"user","content":"第一教学楼"}
+      ],
+    }
+    // this.socket.emit('chat', jsonObject);
+    // this.message = '';
+    this.socket.emit('AI_assistant',jsonObject);
+    }
+    // const jsonObject = {
+    //   userName: this.userName,
+    //   message: this.message,
+    //   roomId: this.roomId,
+    //   type: 'text'
+    // };
+    // const jsonObject = {
+    //   userName: this.userName,
+    //   message: this.message,
+    //   // role:'user',
+    //   dataList : [
+    //     {"role":"system","content":"您好，我是智能助手，有什么可以帮您？"},
+    //     {"role":"user","content":"我想要报修"},
+    //     {"role":"assistant","content":"请问您是哪栋楼的？"},
+    //     {"role":"user","content":"第一教学楼"}
+    //   ],
+    // }
+    // // this.socket.emit('chat', jsonObject);
+    // // this.message = '';
+    // this.socket.emit('AI_assistant',jsonObject);
   }
 
   sendImageMessage(imageMessage:string,) {
@@ -275,6 +323,9 @@ export class HomeComponent {
         case 87: // w
           platform.playerControl('w');
           break;
+        //c
+        case 67:
+          this.ifShowChat();
       }
     }, false);
     //松手后停止
@@ -298,6 +349,13 @@ export class HomeComponent {
   //是否显示聊天框
   ifShowChat() {
     this.isShowChat = !this.isShowChat;
+    let chatDiv = document.getElementById('chatDiv');
+    if(this.isShowChat) {
+      chatDiv!.style.display = 'block';
+    }
+    else {
+      chatDiv!.style.display = 'none';
+    }
   }
 
   //进入课程
@@ -319,7 +377,6 @@ export class HomeComponent {
       building: this.lastTeachingBuilding,
       isOver: false
     };
-    console.log(jsonObject);
     this.http.post(api, jsonObject, httpOptions).subscribe((res: any) => {
       if (res.success) {
         alert("创建成功");
@@ -361,9 +418,14 @@ export class HomeComponent {
     });
   }
 
+  //点击选择图片,展示本机图片文件夹
+  onChooseImage() {
+    document.getElementById('input_image')!.click();
+  }
+
   //获取用户输入的图片文件
   view(){
-    const file = document.getElementById('demo').files[0];
+    const file = document.getElementById('input_image').files[0];
     console.log(file);
     imageConversion.compressAccurately(file,200).then(res=>{
       //The res in the promise is a compressed Blob type (which can be treated as a File type) file;
@@ -372,5 +434,19 @@ export class HomeComponent {
         this.sendImageMessage(res2);
       })
     })
+  }
+  //用户点击语音聊天
+  onChooseVoice(){
+    let voiceBtn = document.getElementById('voice_btn');
+    //获取btn的文本
+    let voiceBtnText = voiceBtn!.innerText;
+    if(voiceBtnText == '开启聊天'){
+      voiceBtn!.innerText = '关闭聊天';
+      this.startRecording();
+    }
+    else{
+      voiceBtn!.innerText = '开启聊天';
+      this.stopRecording();
+    }
   }
 }

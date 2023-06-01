@@ -114,7 +114,7 @@ export class Platform {
     });
 
     //加载地图
-    this.loadEnvironment();
+    // this.loadEnvironment();
     //设置渲染器
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setPixelRatio(window.devicePixelRatio);

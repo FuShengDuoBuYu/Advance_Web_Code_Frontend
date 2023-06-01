@@ -12,18 +12,13 @@ export class PersonalCenterComponent implements OnInit, OnDestroy {
 
   constructor(public http: HttpClient) { }
 
-  ngOnInit() {
-    document.title = "个人中心";
-  }
-
-<<<<<<< HEAD
   ngOnDestroy() {
     // 在组件销毁时销毁当前的图表实例
     if (this.currentChart) {
       this.currentChart.dispose();
       this.currentChart = null;
     }
-=======
+  }
   ngOnInit() {
     let lineData;
     /*sessionStorage.setItem("token",'123456');*/
@@ -205,7 +200,6 @@ export class PersonalCenterComponent implements OnInit, OnDestroy {
     option && myChart4.setOption(option4);
 
 
->>>>>>> 6463fb833be69e18d6c1903ee8e0100206385c88
   }
 
 

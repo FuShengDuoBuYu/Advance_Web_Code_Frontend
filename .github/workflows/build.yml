@@ -1,0 +1,27 @@
+on: push
+name: build frontend
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+    
+        steps:
+        - name: Build Image
+          run: |
+            docker build -t annnfdu/advanced_web_frontend .
+        - name: Login to Registry
+          run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password ${{ secrets.DOCKER_PASSWORD }}
+        - name: Push Image
+          run: |
+            docker push annnfdu/advanced_web_frontend
+        - name: Deploy to Server
+          uses: appleboy/ssh-action@master
+          with:
+            host: ${{ secrets.HOST }}
+            username: ${{ secrets.HOST_NAME }}
+            password: ${{ secrets.HOST_PASSWORD }}
+            port: ${{ secrets.HOST_PORT }}
+            script: |
+              docker pull annnfdu/advanced_web_frontend
+              docker stop zja_advanced_web_frontend
+              docker rm zja_advanced_web_frontend
+              docker run -d --name zja_advanced_web_frontend -p 10085:80 annnfdu/advanced_web_frontend

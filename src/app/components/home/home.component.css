@@ -13,6 +13,15 @@
   border-radius: 5%;
 }
 
+.robot-chat{
+  position: absolute;
+  right: 5%;
+  bottom: 5%;
+  background: #eeeeee;
+  opacity: 0.8;
+  border-radius: 5%;
+}
+
 .classroom-dialog{
   position: absolute;
   right: 5%;

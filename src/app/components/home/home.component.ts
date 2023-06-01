@@ -39,12 +39,16 @@ export class HomeComponent {
   userName: string | null = localStorage.getItem('role') + '-' + localStorage.getItem('username');
   role: string | null = localStorage.getItem('role');
   roomId: number = 1;
-  message = '';
+
   socket: any;
   //聊天相关
   isShowChat = true;
+  isShowRobot = false;
+  message = '';
   messages: Message[] = [];
+  robotMessage = '';
   robotMessages: Message[] = [];
+  aiModel = 'moss';
   //开课相关
   createCourseTitle = "";
   createCourseDescription = "";
@@ -132,7 +136,7 @@ export class HomeComponent {
       console.log('Try to reconnect at ' + attempts + ' attempt(s).');
     });
     this.socket.on("AI_assistant", (data: { message: string }) => {
-      console.log(data.message);
+      this.robotMessages.push(new Message(new Date().toLocaleTimeString(), data.message, this.aiModel, 'assistant',"","text"));
     });
     const platformDiv = document.getElementById('platform');
     //设置platformDiv的pointLock
@@ -227,59 +231,14 @@ export class HomeComponent {
   }
 
   sendMessage() {
-
-    //普通消息
-    if(this.message.indexOf('/robot')==-1){
-      const jsonObject = {
-        userName: this.userName,
-        message: this.message,
-        roomId: this.roomId,
-        type: 'text'
-      };
-      this.socket.emit('chat', jsonObject);
-      this.message = '';
-    }
-    //退出的消息
-    else if(this.message.indexOf('/exit')!=-1){
-
-    }
-    //机器人消息
-    else{
-      const jsonObject = {
+    const jsonObject = {
       userName: this.userName,
       message: this.message,
-      // role:'user',
-      dataList : [
-        {"role":"system","content":"您好，我是智能助手，有什么可以帮您？"},
-        {"role":"user","content":"我想要报修"},
-        {"role":"assistant","content":"请问您是哪栋楼的？"},
-        {"role":"user","content":"第一教学楼"}
-      ],
-    }
-    // this.socket.emit('chat', jsonObject);
-    // this.message = '';
-    this.socket.emit('AI_assistant',jsonObject);
-    }
-    // const jsonObject = {
-    //   userName: this.userName,
-    //   message: this.message,
-    //   roomId: this.roomId,
-    //   type: 'text'
-    // };
-    // const jsonObject = {
-    //   userName: this.userName,
-    //   message: this.message,
-    //   // role:'user',
-    //   dataList : [
-    //     {"role":"system","content":"您好，我是智能助手，有什么可以帮您？"},
-    //     {"role":"user","content":"我想要报修"},
-    //     {"role":"assistant","content":"请问您是哪栋楼的？"},
-    //     {"role":"user","content":"第一教学楼"}
-    //   ],
-    // }
-    // // this.socket.emit('chat', jsonObject);
-    // // this.message = '';
-    // this.socket.emit('AI_assistant',jsonObject);
+      roomId: this.roomId,
+      type: 'text'
+    };
+    this.socket.emit('chat', jsonObject);
+    this.message = '';
   }
 
   sendImageMessage(imageMessage:string,) {
@@ -326,6 +285,11 @@ export class HomeComponent {
         //c
         case 67:
           this.ifShowChat();
+          break;
+        //r
+        case 82:
+          this.ifShowRobot();
+          break;
       }
     }, false);
     //松手后停止
@@ -358,10 +322,22 @@ export class HomeComponent {
     }
   }
 
+  //是否显示机器人
+  ifShowRobot() {
+    this.isShowRobot = !this.isShowRobot;
+    let robotDiv = document.getElementById('robotDiv');
+    if(this.isShowRobot) {
+      robotDiv!.style.display = 'block';
+    }
+    else {
+      robotDiv!.style.display = 'none';
+    }
+  }
+
   //进入课程
   enterClass(index) {
-    //todo:进入课程
-    console.log(this.courseList[index]);
+    // console.log(this.courseList[index]);
+    window.location.href = '/classroom';
   }
 
   //创建课程
@@ -448,5 +424,40 @@ export class HomeComponent {
       voiceBtn!.innerText = '开启聊天';
       this.stopRecording();
     }
+  }
+
+  //机器人聊天
+  onRobotSubmit(){
+    let robotMessage = new Message(
+      //当前时间
+      new Date().toLocaleTimeString(),
+      //消息内容
+      this.robotMessage,
+      //用户名
+      localStorage.getItem("username")!,
+      //角色
+      "user",
+      "",
+      //消息类型
+      "text");
+    this.robotMessages.push(robotMessage);
+
+    //发送消息
+    //设置历史消息
+    let historyMessage = [];
+    for(let i = 0;i<this.robotMessages.length;i++){
+      historyMessage.push(
+        {"role":this.robotMessages[i].role,"message":this.robotMessages[i].message}
+      );
+    }
+    
+    const jsonObject = {
+      userName: localStorage.getItem("username")!,
+      message: this.robotMessage,
+      model: this.aiModel,
+      dataList:historyMessage
+    };
+    this.socket.emit('AI_assistant', jsonObject);
+    this.robotMessage = "";
   }
 }

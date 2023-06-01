@@ -1,10 +1,16 @@
-on: push
-name: build frontend
+name: CI/CD Pipeline
+on:
+  #Manually trigger workflow runs
+  workflow_dispatch:
+  #Trigger the workflow on push from the main branch
+  push:
+    branches:
+      - main
 jobs:
-    deploy:
-        runs-on: ubuntu-latest
-    
-        steps:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+        - uses: actions/checkout@v2
         - name: Build Image
           run: |
             docker build -t annnfdu/advanced_web_frontend .

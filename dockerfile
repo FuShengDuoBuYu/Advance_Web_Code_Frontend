@@ -7,6 +7,8 @@ WORKDIR /usr/src/app
 
 #这一步做的事情就是把在本地上的 Angular 应用复制到镜像里面。
 COPY . .
+# 远程下载
+RUN wget --load-cookies ./cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies ./cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1fGlOY9zs5xeyWL4K5vcIDQI4vMn6gX_d' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1fGlOY9zs5xeyWL4K5vcIDQI4vMn6gX_d" -O /usr/src/app/src/assets/model/rac_advanced_sample_project.obj && rm -rf ./cookies.txt
 #运行了一下 npm install 命令，也就是安装 Angular 项目需要的所有的东西
 RUN npm install
 #它运行的是 ng build --prod，作用就是构建一个适合在生产环境上运行的 Angular 应用

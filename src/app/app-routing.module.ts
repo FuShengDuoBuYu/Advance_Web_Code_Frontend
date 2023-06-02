@@ -33,7 +33,6 @@ const routes: Routes = [
   {
     path: 'personalCenter',
     component: PersonalCenterComponent,
-    canActivate: [loginguard],
   },
   {
     path: 'selectPlayer',

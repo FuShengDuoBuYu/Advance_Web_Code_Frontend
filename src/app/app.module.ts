@@ -17,7 +17,8 @@ import { MatCardModule } from '@angular/material/card';
 import {MatRadioModule} from '@angular/material/radio';
 // sidenav
 import {MatSidenavModule} from '@angular/material/sidenav';
-
+// button-toggle
+import {MatButtonToggleModule} from '@angular/material/button-toggle';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -68,8 +69,7 @@ import { MatSelectModule } from '@angular/material/select';
     MatRadioModule,
     MatListModule,
     MatMenuModule,
-
-
+    MatButtonToggleModule,
     MatSelectModule,
 
 
@@ -87,9 +87,8 @@ import { MatSelectModule } from '@angular/material/select';
 export class AppModule { }
 export const environment = {
   production: false,
-  // apiPrefix: 'http://106.15.35.61:10086',
-  apiPrefix: 'http://localhost:10086',
-  socketPrefix: 'http://localhost:10088'
-  // apiPrefix: 'http://192.168.31.205:10086',
-  // socketPrefix: 'http://192.168.31.205:10088'
+  apiPrefix: 'http://106.14.140.55:10086',
+  socketPrefix: 'http://106.14.140.55:10088'
+  // apiPrefix: 'http://localhost:10086',
+  // socketPrefix: 'http://localhost:10088'
 };

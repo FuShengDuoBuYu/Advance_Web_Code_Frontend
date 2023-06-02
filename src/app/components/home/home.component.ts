@@ -11,7 +11,6 @@ import Recorder from 'js-audio-recorder';
 import { trigger, state, style, animate, transition } from '@angular/animations';
 import { Message } from '../message';
 import * as imageConversion from 'image-conversion';
-import {chatMessage} from "../../type";
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
@@ -20,8 +19,8 @@ import {chatMessage} from "../../type";
     trigger('openClose', [
       // animation triggers go here
       state('open', style({
-        width: '30%',
-        height: '50%',
+        width: '50%',
+        height: '60%',
       })),
       state('closed', style({
         width: '0%',
@@ -40,11 +39,16 @@ export class HomeComponent {
   userName: string | null = localStorage.getItem('role') + '-' + localStorage.getItem('username');
   role: string | null = localStorage.getItem('role');
   roomId: number = 1;
-  message = '';
+
   socket: any;
   //聊天相关
   isShowChat = true;
+  isShowRobot = false;
+  message = '';
   messages: Message[] = [];
+  robotMessage = '';
+  robotMessages: Message[] = [];
+  aiModel = 'moss';
   //开课相关
   createCourseTitle = "";
   createCourseDescription = "";
@@ -54,17 +58,8 @@ export class HomeComponent {
   createCourseForm: FormGroup;
   //录音相关
   recorder: Recorder;
-  decoder: Recorder
-  robotCommand: string = '/robot';
-  assistantRole: string = 'assistant';
-  userRole: string = 'user';
-  initChatMessage: chatMessage = {
-    role: this.assistantRole,
-    content: '你好，我是机器人小助手，有什么可以帮助你的吗？',
-  }
-  //之前的信息
-  dataList: chatMessage[] = [this.initChatMessage];
-
+  decoder: Recorder;
+  recordInterval: any;
   constructor(private formBuilder: FormBuilder, public http: HttpClient) { }
   //当页面view加载完成后，执行ngAfterViewInit方法
   ngAfterViewInit() {
@@ -129,10 +124,6 @@ export class HomeComponent {
       );
     });
 
-    this.socket.on('chatGPT',(data:{message:string})=>{
-      console.log(data.message)
-    })
-
     this.socket.on('speech', (data: { userName: string; message: string }) => {
       var snd = new Audio(data.message);
       snd.play();
@@ -144,7 +135,9 @@ export class HomeComponent {
     this.socket.on('reconnect_attempt', (attempts: string) => {
       console.log('Try to reconnect at ' + attempts + ' attempt(s).');
     });
-
+    this.socket.on("AI_assistant", (data: { message: string }) => {
+      this.robotMessages.push(new Message(new Date().toLocaleTimeString(), data.message, this.aiModel, 'assistant',"","text"));
+    });
     const platformDiv = document.getElementById('platform');
     //设置platformDiv的pointLock
     platformDiv?.addEventListener('click', () => {
@@ -177,8 +170,7 @@ export class HomeComponent {
   startRecording() {
     this.recorder.start();
     const that = this;
-    // 设置一个1s的间距
-    setInterval(function () {
+    this.recordInterval = setInterval(function () {
       that.recorder.stop();
       let blob: Blob = that.recorder.getWAVBlob();
       that.recorder.start();
@@ -197,6 +189,7 @@ export class HomeComponent {
 
   stopRecording() {
     this.recorder.stop();
+    clearInterval(this.recordInterval);
     let blob: Blob = this.recorder.getWAVBlob();
     // 编码成为字符串
     const reader = new FileReader();
@@ -231,15 +224,10 @@ export class HomeComponent {
   }
 
   onSubmit() {
-    this.sendMessage();
     // 获取到表单里的数据
-    if (this.message.startsWith(this.robotCommand)){
-      let content = this.message.split(this.robotCommand)[1];
-      this.socket.emit('chatGPT',{
-        dataList: this.dataList,
-        message: content,
-      })
-    }
+    console.log(this.userName);
+    console.log(this.message);
+    this.sendMessage();
   }
 
   sendMessage() {
@@ -294,6 +282,14 @@ export class HomeComponent {
         case 87: // w
           platform.playerControl('w');
           break;
+        //c
+        case 67:
+          this.ifShowChat();
+          break;
+        //r
+        case 82:
+          this.ifShowRobot();
+          break;
       }
     }, false);
     //松手后停止
@@ -317,12 +313,31 @@ export class HomeComponent {
   //是否显示聊天框
   ifShowChat() {
     this.isShowChat = !this.isShowChat;
+    let chatDiv = document.getElementById('chatDiv');
+    if(this.isShowChat) {
+      chatDiv!.style.display = 'block';
+    }
+    else {
+      chatDiv!.style.display = 'none';
+    }
+  }
+
+  //是否显示机器人
+  ifShowRobot() {
+    this.isShowRobot = !this.isShowRobot;
+    let robotDiv = document.getElementById('robotDiv');
+    if(this.isShowRobot) {
+      robotDiv!.style.display = 'block';
+    }
+    else {
+      robotDiv!.style.display = 'none';
+    }
   }
 
   //进入课程
   enterClass(index) {
-    //todo:进入课程
-    console.log(this.courseList[index]);
+    // console.log(this.courseList[index]);
+    window.location.href = '/classroom';
   }
 
   //创建课程
@@ -338,7 +353,6 @@ export class HomeComponent {
       building: this.lastTeachingBuilding,
       isOver: false
     };
-    console.log(jsonObject);
     this.http.post(api, jsonObject, httpOptions).subscribe((res: any) => {
       if (res.success) {
         alert("创建成功");
@@ -380,9 +394,14 @@ export class HomeComponent {
     });
   }
 
+  //点击选择图片,展示本机图片文件夹
+  onChooseImage() {
+    document.getElementById('input_image')!.click();
+  }
+
   //获取用户输入的图片文件
   view(){
-    const file = document.getElementById('demo').files[0];
+    const file = document.getElementById('input_image').files[0];
     console.log(file);
     imageConversion.compressAccurately(file,200).then(res=>{
       //The res in the promise is a compressed Blob type (which can be treated as a File type) file;
@@ -391,5 +410,54 @@ export class HomeComponent {
         this.sendImageMessage(res2);
       })
     })
+  }
+  //用户点击语音聊天
+  onChooseVoice(){
+    let voiceBtn = document.getElementById('voice_btn');
+    //获取btn的文本
+    let voiceBtnText = voiceBtn!.innerText;
+    if(voiceBtnText == '开启聊天'){
+      voiceBtn!.innerText = '关闭聊天';
+      this.startRecording();
+    }
+    else{
+      voiceBtn!.innerText = '开启聊天';
+      this.stopRecording();
+    }
+  }
+
+  //机器人聊天
+  onRobotSubmit(){
+    let robotMessage = new Message(
+      //当前时间
+      new Date().toLocaleTimeString(),
+      //消息内容
+      this.robotMessage,
+      //用户名
+      localStorage.getItem("username")!,
+      //角色
+      "user",
+      "",
+      //消息类型
+      "text");
+    this.robotMessages.push(robotMessage);
+
+    //发送消息
+    //设置历史消息
+    let historyMessage = [];
+    for(let i = 0;i<this.robotMessages.length;i++){
+      historyMessage.push(
+        {"role":this.robotMessages[i].role,"message":this.robotMessages[i].message}
+      );
+    }
+    
+    const jsonObject = {
+      userName: localStorage.getItem("username")!,
+      message: this.robotMessage,
+      model: this.aiModel,
+      dataList:historyMessage
+    };
+    this.socket.emit('AI_assistant', jsonObject);
+    this.robotMessage = "";
   }
 }

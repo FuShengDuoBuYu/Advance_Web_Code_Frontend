@@ -10,6 +10,7 @@
 }
 
 .content{
+  position: absolute;
   width: 800px;
   height: 800px;
 }
@@ -38,4 +39,23 @@ mat-drawer {
   width: 200px;
 }
 
+.personal-info-table {
+  width: 100%;
+  font-size: 30px;
+  font-family: 华文楷体;
+  font-style: normal;
 
+}
+
+.personal-info-table th {
+  text-align: left;
+  font-weight: bold;
+}
+
+.personal-info-table td {
+  padding-left: 10px;
+}
+
+.personal-info-table tr {
+  line-height: 1.5; /* 调整行距的值 */
+}

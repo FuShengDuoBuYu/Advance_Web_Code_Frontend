@@ -35,7 +35,14 @@
         <mat-nav-list>
           <a mat-list-item (click)="handleMenuSelection('学习时长')">学习时长</a>
           <a mat-list-item (click)="handleMenuSelection('学习分类')">学习分类</a>
-          <a mat-list-item (click)="handleMenuSelection('学习比较')">学习比较</a>
+          <a mat-list-item [matMenuTriggerFor]="submenu" (click)="$event.stopPropagation()">学习比较</a>
+          <mat-menu #submenu="matMenu">
+            <mat-nav-list>
+              <a mat-list-item (click)="handleMenuSelection('课程1')">课程1</a>
+              <a mat-list-item (click)="handleMenuSelection('课程2')">课程2</a>
+              <a mat-list-item (click)="handleMenuSelection('课程3')">课程3</a>
+            </mat-nav-list>
+          </mat-menu>
           <a mat-list-item (click)="handleMenuSelection('课程数量')">课程数量</a>
         </mat-nav-list>
       </mat-menu>
@@ -61,10 +68,45 @@
       <div  id="bar" class="chart-container"></div>
       <div id="account" class="content">
         <!-- 账户信息的内容 -->
+        <form *ngIf="showForm" class="revise-password">
+          <mat-form-field appearance="fill">
+            <mat-label>请输入</mat-label>
+            <input matInput >
+            <mat-hint>原密码</mat-hint>
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>请输入</mat-label>
+            <input matInput placeholder="不少于6位">
+            <mat-hint>新密码</mat-hint>
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>请输入</mat-label>
+            <input matInput >
+            <mat-hint>再次输入新密码</mat-hint>
+          </mat-form-field>
+        </form>
       </div>
       <div id="profile" class="content">
         <!-- 个人信息的内容 -->
-        hello world!
+        <table *ngIf="showTable" class="personal-info-table">
+          <tr>
+            <th>姓名</th>
+            <td>{{ personalInfo?.name }}</td>
+          </tr>
+          <tr>
+            <th>最喜欢的课程</th>
+            <td>{{ personalInfo?.class }}</td>
+          </tr>
+          <tr>
+            <th>学习时长/h</th>
+            <td>{{ personalInfo?.time }}</td>
+          </tr>
+          <tr>
+            <th>发言次数</th>
+            <td>{{ personalInfo?.number }}</td>
+          </tr>
+          <!-- 其他个人信息字段的行 -->
+        </table>
       </div>
       <div id="homepage" class="content">
         <!-- 个人主页的内容 -->

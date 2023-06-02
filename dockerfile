@@ -16,7 +16,7 @@ RUN npm run build --prod
 #这里的nginx版本可以去掉 就会下载 latest
 FROM nginx:1.17
 #copy一份obj
-COPY /usr/src/app/src/assets/model/rac_advanced_sample_project.obj /usr/src/app/dist/advanced_web_frontend/assets/model/rac_advanced_sample_project.obj
+COPY --from=builder /usr/src/app/src/assets/model/rac_advanced_sample_project.obj /usr/src/app/dist/advanced_web_frontend/assets/model/rac_advanced_sample_project.obj
 #你需要将这里的angulardemo10换成你执行ng build在dist下生成的目录 一般是你的项目名称
 COPY --from=builder /usr/src/app/dist/advanced_web_frontend /usr/share/nginx/html
 #这是将你配置好的nginx配置替换docker里默认的nginx 建议学习nginx

@@ -11,6 +11,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
         - uses: actions/checkout@v2
+        - name: Use Node.js
+          uses: actions/setup-node@v2
+          with: 
+            node-version: "14.x"
+        - name: Install dependencies
+          run: npm install
+        - name: Build
+          run: npm run build --prod
+        - name: Upload Artifact
+          uses: actions/upload-artifact@v2
+          with:
+            name: advanced_web_frontend
+            path: dist/advanced_web_frontend
         - name: Build Image
           run: |
             docker build -t annnfdu/advanced_web_frontend .

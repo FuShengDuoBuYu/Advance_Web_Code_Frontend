@@ -62,13 +62,11 @@
   </mat-drawer>
   <mat-drawer-content>
     <div class="container">
-      <div  id="line" class="chart-container"></div>
-      <div  id="pie" class="chart-container"></div>
-      <div  id="radar" class="chart-container"></div>
-      <div  id="bar" class="chart-container"></div>
-      <div id="account" class="content">
+      <div  id="chart" class="chart-container" [class.show-chart]="showChart"></div>
+      <div id="account" class="content" [class.show-content]="showContent">
+        <button *ngIf="showForm" class="revise-password" href="">修改密码（暂未开放）</button>
         <!-- 账户信息的内容 -->
-        <form *ngIf="showForm" class="revise-password">
+<!--        <form *ngIf="showForm" class="revise-password">
           <mat-form-field appearance="fill">
             <mat-label>请输入</mat-label>
             <input matInput >
@@ -84,14 +82,18 @@
             <input matInput >
             <mat-hint>再次输入新密码</mat-hint>
           </mat-form-field>
-        </form>
+        </form>-->
       </div>
-      <div id="profile" class="content">
+      <div id="profile" class="info" [class.show-content]="showContent">
         <!-- 个人信息的内容 -->
         <table *ngIf="showTable" class="personal-info-table">
           <tr>
             <th>姓名</th>
             <td>{{ personalInfo?.name }}</td>
+          </tr>
+          <tr>
+            <th>上次登录时间</th>
+            <td>{{ personalInfo?.login }}</td>
           </tr>
           <tr>
             <th>最喜欢的课程</th>
@@ -102,8 +104,12 @@
             <td>{{ personalInfo?.time }}</td>
           </tr>
           <tr>
-            <th>发言次数</th>
+            <th>发言总次数</th>
             <td>{{ personalInfo?.number }}</td>
+          </tr>
+          <tr>
+            <th>最近发言</th>
+            <td>{{ personalInfo?.say }}</td>
           </tr>
           <!-- 其他个人信息字段的行 -->
         </table>

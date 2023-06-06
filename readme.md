@@ -1,5 +1,28 @@
-<!-- [toc] -->
+[toc]
+
+
+
+
 # 高级Web技术 PJ文档
+# 待完成文档的TODO:
+郭仲天
+- [ ] TODO1
+- [ ] TODO3
+- [ ] TODO4
+- [ ] TODO7
+- [ ] TODO11
+
+崔德华
+- [ ] TODO5
+
+张峻安 李春阳
+- [x] TODO2
+- [x] TODO6
+- [x] TODO8
+- [x] TODO9
+- [ ] TODO10
+
+
 ## 1 成员
 ### 1.1 成员详情 
 组长:郭仲天(19307110250)
@@ -10,7 +33,7 @@
 |组长|郭仲天|前端与文档书写|25%|搭建前端项目框架,书写登录注册,书写选择用户页面和主页,添加人物键盘鼠标控制,构建教学楼模型,碰撞检测,选择教室,以及图片聊天,机器人聊天等功能|
 |组员|张峻安|后端与文档书写|25%|构建Socket通信框架，实现多人位置更新，方块放置和删除，聊天和语音的前后端socket代码；编写前后端CI/CD流程配置和dockerfile|
 |组员|崔德华|前端|25%||
-|组员|李春阳|后端|25%|注册登录及权限验证、课程系统、可视化数据存储、SocketIO及ServiceImpl单元测试、聊天机器人|
+|组员|李春阳|后端|25%|注册登录及权限验证、课程系统、可视化数据存储、ServiceImpl单元测试、聊天机器人|
 ## 2 查看网址
 ### 项目网址
 - 助教/老师可以通过下面的网址访问我们的PJ的部署网站
@@ -31,7 +54,7 @@
 ---
 ### 3.1 项目的使用技术栈
 - 前端: `three.js` `socket.io` `echarts` `Angular`
-- 后端: `springboot` `mysql` `socket.io` `mybatis`
+- 后端: `springboot` `mysql` `socket.io` `spring-data-jpa`
 ---
 ### 3.2 项目的组织结构与文件说明
 #### 3.2.1 前端项目结构
@@ -146,17 +169,91 @@
 - 用户可以选择想要进入web3D的虚拟形象,如下图所示
 ![select_player](./readme.assets/selectPlayer.png)
 - 用户可以在大厅打开对应的聊天框,并且可以在聊天框中发送消息,如下图所示
-
+![chat](./readme.assets/chat.png)
 - 用户可以在大厅中选择自己想要进入的教室
-
+![teaching_building_gate](./readme.assets/teaching_building_gate.png)
 - 用户在教室可以放置方块,以达到更好的教学交流效果,如下图所示
-
+> TODO1
+![place_block](./readme.assets/place_block.png)
 - 用户可以在个人中心查看自己的课程信息,包括**发言次数,发言时长,所学课程及时间**等,如下图所示
-
+![charts](./readme.assets/chart.png)
 - 更多的系统功能将会在演示视频中展示,如下视频所示:
-
+> TODO11
 #### 3.2.2 后端项目结构
-
+后端项目基于`SpringBoot`搭建，使用`spring-data-jpa`实现持久化，使用`socket.io`实现多人在线交互。项目结构如下：
+> TODO2
+```bash
+├── .github
+│   └── workflows # github action的配置文件
+│       └── build.yml
+├── .gitignore
+├── Dockerfile
+├── mvnw
+├── mvnw.cmd
+├── pom.xml
+└── src # 项目源代码
+    ├── main
+    │   ├── java
+    │   │   └── com
+    │   │       └── se
+    │   │           └── advancedweb
+    │   │               ├── AdvancedwebApplication.java # 项目启动类
+    │   │               ├── Interceptor
+    │   │               │   └── AuthInterceptor.java # token验证拦截器
+    │   │               ├── Swagger2.java # swagger2配置类
+    │   │               ├── common
+    │   │               │   ├── GlobalExceptionHandler.java # 全局异常处理类
+    │   │               │   └── VerifyToken.java # token验证注解
+    │   │               ├── config
+    │   │               │   └── InterceptorConfig.java # 拦截器配置类
+    │   │               ├── controller
+    │   │               │   └── UserController.java # 用户相关的controller
+    │   │               ├── entity # 实体类
+    │   │               │   ├── Course.java
+    │   │               │   ├── CourseSelection.java
+    │   │               │   ├── User.java
+    │   │               │   ├── UserChatMessage.java
+    │   │               │   ├── UserConnectDuration.java
+    │   │               │   ├── UserLoginHistory.java
+    │   │               │   └── VO # 用于返回给前端的实体类
+    │   │               │       ├── CourseStudentVO.java
+    │   │               │       └── CourseTeacherVO.java
+    │   │               ├── mapper # JPA的mapper
+    │   │               │   ├── CourseMapper.java
+    │   │               │   ├── CourseSelectionMapper.java
+    │   │               │   ├── UserChatMessageMapper.java
+    │   │               │   ├── UserConnectDurationMapper.java
+    │   │               │   ├── UserLoginHistoryMapper.java
+    │   │               │   └── UserMapper.java
+    │   │               ├── service # 服务层
+    │   │               │   ├── UserService.java # 用户服务接口
+    │   │               │   └── impl
+    │   │               │       └── UserServiceImpl.java
+    │   │               ├── socket # socket相关
+    │   │               │   ├── BlockInfo.java # 方块信息
+    │   │               │   ├── ClientCache.java # 客户端缓存
+    │   │               │   ├── SocketIOConfig.java # socket事件配置
+    │   │               │   └── UserInfo.java # 用户信息
+    │   │               └── util # 工具类
+    │   │                   ├── ConstVariable.java # 常量
+    │   │                   ├── MossAPI.java # moss api
+    │   │                   ├── OpenAIAPI.java # openai api
+    │   │                   ├── Response.java # 统一返回格式
+    │   │                   └── TokenUtil.java # token工具类
+    │   └── resources
+    │       ├── META-INF
+    │       │   └── MANIFEST.MF
+    │       └── application.properties # 项目配置文件
+    └── test
+        └── java
+            └── com
+                └── se
+                    └── advancedweb
+                        ├── AdvancedwebApplicationTests.java
+                        └── service
+                            └── impl
+                                └── UserServiceImplTest.java # 用户服务测试类
+```
 ---
 
 ### 3.2 项目评分点梳理设计与实现
@@ -164,7 +261,10 @@
 #### 3.2.1 UI和交互(10 points)
 ##### 3.2.1.1 界面美观(5 points)
 我们利用`Angular Material`实现了前端的UI组件,这些组件都是经过精心设计的,并且可以在桌面端和移动端良好的适配,如下图所示:
+> 桌面端
+
 ![ui_desktop](./readme.assets/ui_desktop.png)
+> 移动端
 
 ![ui_mobile](./readme.assets/ui_mobile.jpg)
 ##### 3.2.1.2 交互体验流畅(5 points)
@@ -245,29 +345,8 @@ public boolean preHandle(HttpServletRequest request, HttpServletResponse respons
     Method method = handlerMethod.getMethod();
     //检查需不需要验证token
     if(method.isAnnotationPresent(VerifyToken.class)){
-        if(token == null || token == ""){
-            throw new RuntimeException("暂无token信息！请先登录获取token！");
-        }
-        String userId;
-        try {
-            userId = JWT.decode(token).getAudience().get(0);
-        } catch (JWTDecodeException j){
-            throw new RuntimeException("token非法！请重新登录！");
-        }
-        if(JWT.decode(token).getExpiresAt().compareTo(new Date())<0){
-            throw new RuntimeException("token已过期！请重新登录！");
-        }
-        String password = findUserPassword(userId);
-        if(password.equals("")){
-            throw new RuntimeException("用户不存在！请重新登录！");
-        }
         //验证token
-        JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256(password)).build();
-        try {
-            jwtVerifier.verify(token);
-        } catch (JWTVerificationException e){
-            throw new RuntimeException("token验证失败！请重新登录！");
-        }
+        //...
     }
     return true;
 }
@@ -298,8 +377,10 @@ public Response<?> getUserInfo(...) {
 ##### 3.2.2.2 用户后台页面(8 points)
 在用户的后台页面,我们大致将其分成了两个部分:
 ###### 个人基本信息展示与维护
+在个人信息页面,用户可以查看到自己的用户名,身份,学习时长等一系列信息
+> TODO3
 ###### 个人课程信息的图表化展示
-
+> TODO4
 #### 3.2.3 3D场景(45 points)
 ##### 3.2.3.1 正确显示一个可交互的3D场景(15 points)
 - 我们的3D场景是学校和教室.用户选定好虚拟角色后,会进入学校的教学楼外.在教学楼外的操场中,用户可以自由的移动,并且可以和其他用户进行交流.
@@ -316,7 +397,7 @@ public Response<?> getUserInfo(...) {
 - 我们的灵感来自于`Minecraft`,在`Minecraft`中,用户可以通过方块创建出绚丽多彩的各式各样的场景,为了应用这种灵活性,我们决定加入如下功能:**在教室中,老师和学生可以自由地在讲台上放置方块**
 - 我们设想,通过放置方块,老师和学生可以通过更好地展示动态的想法和课堂互动.例如,老师可以在讲台上通过放置和销毁方块,展示出`数据结构`中的`栈`和`队列`的特点,并且可以让学生通过放置和销毁方块,来模拟`栈`和`队列`的特点.
 - 我们的实现思路和方法如下:
-todo:
+> TODO5:
 
 ##### 3.2.3.3 支持多人加入同一个虚拟世界并正确更新其他用户的位置和行为(15 points)
 - 我们通过`socket.io`实现了多人在线的功能,并且在3D场景中,实现了多人在线的功能.
@@ -384,16 +465,45 @@ todo:
     - 聊天消息:`/src/components/message.ts`
     - ...
 ###### 后端
-Todo:
+> TODO6:
+- 项目采用`RESTful`风格的接口，例如:
+    - 登录:`/user/login`
+    - 注册:`/user/register`
+    - 创建课程:`/user/createCourse`
+    - 删除课程:`/user/deleteCourse`
+    - ...
+- 项目自行编写了异常处理机制，对异常情况进行返回并对异常进行处日志记录：
+  ```java
+  @ControllerAdvice
+  public class GlobalExceptionHandler {
+    @ResponseBody
+    @ExceptionHandler(Exception.class)
+    public Object handleException(Exception e){
+      Logger LOG = LoggerFactory.getLogger(e.getClass());
+      LOG.error(e.getMessage(), e);
+      return new Response(false, e.getMessage()!=null?e.getMessage():"服务器发生错误！");
+    }
+  }
+  ```
+- 项目自行编写了统一的Response响应类，便于前端对响应结果的处理:
+  ```java
+  public class Response<T> {
+    private Boolean success; // 是否成功
+    private String message; // 返回消息
+    private T data; // 返回数据
+  }
+  ```
+- 项目使用了面向切面的设计模式，来处理用户的鉴权。具体代码详见[3.2.2.1.2](#3.2.2.1.2 后端:JWT+AOP实现鉴权处理)
 
 #### 3.2.5 项目部署(10 points)
 ##### 将项目部署到服务器上(5 points)
 - 项目已经部署到服务器上,可以通过以下链接访问:
   http://106.14.140.55:10085/
-- 关于部署的具体内容,可以查看本文档的**4 项目部署**
+- 关于部署的具体内容,可以查看本文档的[项目部署](#4-项目部署)部分
 ##### 使用`docker`部署项目(5 points)
 - 我们已经使用`docker`部署了前后端,并且将`docker`镜像上传到了`docker hub`上,可以通过以下命令拉取镜像:
-- 关于`docker`部署的具体内容,可以查看本文档的**3.3.2.2 持续集成与持续部署(CI/CD)**
+- 关于`docker`部署的具体内容,可以查看本文档的[持续集成与持续部署(CI/CD)](#3322-持续集成与持续部署cicd)部分
+<!-- **3.3.2.2 持续集成与持续部署(CI/CD)** -->
 
 ### 3.3 进阶功能与附加功能(20 points)
 #### 3.3.1 进阶功能
@@ -402,7 +512,7 @@ Todo:
 考虑到我们本次PJ的主题是**在线教育**,因此我们认为,除了老师进行教授知识外,如果能有一个**智能助教**来辅助老师进行教学,那么将会大大提高教学效率,因此我们在教室页面中加入了**智能助教-AI助手**的功能.
 ###### 3.3.1.1.2 人工智能的作用
 我们在聊天框的基础上,新增加了**智能助教-AI助手**的聊天,每个人都拥有一个私密的**智能助教-AI助手**,可以在聊天框中与**智能助教-AI助手**进行交流,并且**智能助教-AI助手**会根据用户的输入,进行相应的回复,如下图所示:
-
+![ai_chat](./readme.assets/ai_chat.png)
 ###### 3.3.1.1.3 人工智能的实现
 我们分别引入了**复旦大学Moss**模型和**OpenAI GPT-3.5**模型,用户可以自由选择需要选用的模型,通过输入文字便可以获取对应问题的回复.
 
@@ -410,7 +520,7 @@ Todo:
 注2:**复旦大学Moss**的模型有校外的Api接口,但是复旦信息办的Moss接口的反向代理挂了,需要等复旦信息办修复.而复旦校内的Api是可以用的,在演示视频中会使用复旦大学校园网进行演示该功能.
 
 ##### 3.3.1.2 图表化展示后台记录的数据(5 points)
-
+> TODO7:
 #### 3.3.2 附加功能(10 points)
 ##### 3.3.2.1 多媒体聊天支持
 在PJ的评分标准中,关于多用户之间的交流要求为`文字要求`,但是我们认为,作为在线交流平台,应当拥有较为丰富的交流方式,因此我们在PJ的基础上增加了多媒体聊天的功能,用户可以在聊天框中发送图片,实时语音等多媒体信息.
@@ -447,7 +557,8 @@ Todo:
 ```
 ###### 3.3.2.1.1 实时语音
 用户可以在聊天框中开启`实时语音`功能,开启后,当用户说话时,其他用户可以听到该用户的声音,由于语音无法截图显示,这里就不展示了,但是在演示视频中有展示.
-我们这里实际并没有采用`WebRTC`技术,而是依然采用了课程上推荐使用的`socket.io`技术,具体的实现方式则是通过每2s采样一次用户的声音,然后将采样的数据发送给后端,后端再将数据发送给所有的用户,这样,所有的用户都可以听到该用户的声音,代码如下(home.component.ts):
+我们这里实际并没有采用`WebRTC`技术,而是依然采用了课程上推荐使用的`socket.io`技术,具体的实现方式则是通过每2s采样一次用户的声音,然后将采样的数据发送给后端,后端再将数据发送给所有的用户,这样,所有的用户都可以听到该用户的声音,代码如下:
+> /src/app/components/home/home.component.ts
 ```typescript
   startRecording() {
     this.recorder.start();
@@ -494,10 +605,15 @@ Todo:
 ###### 3.3.2.2.2 具体实现
 考虑到这实际上是属于项目部署的内容,因此此处就不再赘述,还请查看[项目部署](#4-项目部署)部分.
 ##### 3.3.2.3 测试驱动的开发(TDD)
+> TODO8:
 作为重要的开发方法论,`TDD`在我们的开发过程中也是必不可少的,我们在开发过程中,也是采用了`TDD`的开发方法.由于前端主要是`3D`的展示,因此主要以手动测试为主.
-//TODO
-而后端则是采用了**自动化测试**,利用`maven`
 
+而后端则是采用了**自动化测试**,我们使用`Junit`进行了单元测试。为了满足持续集成的需求，我们编写了针对UserServiceImpl的单元测试，覆盖后端Service的所有功能点，同时语句覆盖率达到100%。保证每次代码提交时该模块功能的正确性。
+利用`mvn test`命令即可进行测试,测试结果如下:
+![](./readme.assets/test_result.png)
+
+我们还导入了`jacoco`插件,可以生成测试覆盖率的报告,具体的测试覆盖率如下:
+![cover](./readme.assets/cover.png)
 ---
 
 ## 4 项目部署
@@ -531,7 +647,20 @@ npm run start
 
 此时,前端项目应当已经运行在`localhost:4200`上了,只需要在浏览器中访问该网址即可.
 #### 4.1.3 后端运行
-
+> TODO9:
+1. 进入后端目录
+```shell
+cd backend
+```
+2. 构建
+```bash
+mvn clean
+mvn package
+```
+3. 运行
+```bash
+java -jar target/advancedweb-0.0.1-SNAPSHOT.jar
+```
 ### 4.2 服务器部署
 根据在`3.3.2.2`中的`CI/CD`的介绍,我们是在`docker`上打包了我们的前后端,并且上传到了`docker hub`上,因此我们只需要在服务器上拉取我们的镜像,然后运行即可.
 #### 4.2.1 前端CI/CD与容器化部署
@@ -742,3 +871,32 @@ jobs:
   ```
 ---
 ## 5 接口文档
+### 5.1 socket接口文档
+#### 5.1.1 接收消息接口
+| 接口名称 | 接口描述 | 返回参数 |
+| :------: | :------: | :------: |
+| connect | 初次连接 | 无 |
+| chat | 聊天 | (userName: string; message: string,type:string) |
+| disconnect | 断开连接 | 无 |
+| reconnect_attempt | 重连 | (attempts: string) |
+| remoteData | 服务器发送了远程的其他用户的数据 |(username:string;rolename:string;x:number;y:number;z:number;r:number)|
+| addBlock | 服务器发送了新的区块生成消息 |(blockInfo:BlockInfo)|
+| deleteBlock | 服务器发送了区块删除消息 |(roomId:number;x1:number;x2:number;y1:number;y2:number;z1:number;z2:number;)|
+| speech | 服务器发送了其他用户的语音消息 |(userName:string;message:string)|
+| AI_assistant | 服务器返回的AI助手的消息 |(message:string)|
+> rolename:用户的角色名称,分为学生和老师
+> blockInfo:区块的信息,含位置
+#### 5.1.2 发送消息接口
+| 接口名称 | 接口描述 | 发送参数 |
+| :------: | :------: | :------: |
+| move | 用户发生移动 | (rolename:string;username:string;x:number;y:number;z:number;r:number) |
+| chat | 用户发送聊天信息 | (userName: string; message: string;type:string;roomId:number)
+| speech | 用户发送语音消息 | (roomId:number;userName:string;message:blob) |
+| init | 初始化用户的位置等信息 | (roleName:string;username:string;x:number;y:number;z:number;r:number) |
+| deleteBlock | 用户在教室中删除某个方块,传输方块的位置| (roomId:number;x1:number;x2:number;y1:number;y2:number;z1:number;z2:number;) |
+| addBlock | 用户在教室中添加某个方块,传输方块的位置| (roomId:number;x1:number;x2:number;y1:number;y2:number;z1:number;z2:number;) |
+| AI_assistant | 用户向AI助手发送消息 | (model:string;userName:string;message:string;dataList:[Message]) |
+> roomId:教室的id，用于区分不同的教室
+> dataList:和机器人交谈的上下文列表,用于更好的理解用户的意图
+### 5.2 RESTful接口文档
+> TODO10:

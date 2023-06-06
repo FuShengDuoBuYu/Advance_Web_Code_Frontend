@@ -199,8 +199,8 @@ export class PersonalCenterComponent implements OnInit, OnDestroy {
         // Use default data to display the chart
         const option = {
           title: {
-            text: '发言次数',
-            subtext: '仅含上课时间数据',
+            text: '各课程学习时长',
+            subtext: '数据可能存在误差',
             left: 'center'
           },
           tooltip: {

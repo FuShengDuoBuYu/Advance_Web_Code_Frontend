@@ -2,6 +2,8 @@
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
 import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader";
+import { GLTFLoader } from "node_modules/three/examples/jsm/loaders/GLTFLoader"
+import { DRACOLoader } from "node_modules/three/examples/jsm/loaders/DRACOLoader"
 import * as THREE from 'three';
 
 export class Platform {
@@ -362,26 +364,26 @@ export class Platform {
   //加载环境地图
   loadEnvironment() {
     const platform = this;
-    // 加载obj模型
-    let objLoader = new OBJLoader();
-    objLoader.load('assets/model/rac_advanced_sample_project.obj', function (object) {
-      object.scale.set(100,100,100);
-      object.position.set(0,0,0);
-      //x轴旋转90度
-      object.rotateX(-Math.PI/2);      
-      platform.environment = object;
+    // 加载gltf模型
+    let gltfLoader = new GLTFLoader();
+    let dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath('node_modules/three/examples/js/libs/draco/');
+    gltfLoader.setDRACOLoader(dracoLoader);
+    let ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+    platform.scene.add(ambientLight);
+    gltfLoader.load('assets/model/test.gltf', function (gltf) {
+      gltf.scene.scale.set(100,100,100);
+      gltf.scene.position.set(0,0,0);
+      gltf.scene.traverse( function ( child ) {
+        if ( child.isMesh ) {
+          child.material.emissive =  child.material.color;
+          child.material.emissiveMap = child.material.map ;
+        }
+      });
+      platform.environment = gltf.scene;
       platform.colliders = [];
-      platform.scene.add(object);
-    });
-    // 加载mtl模型
-    let mtlLoader = new MTLLoader();
-    mtlLoader.load('assets/model/rac_advanced_sample_project.mtl', function (materials) {
-      materials.preload();
-      objLoader.setMaterials(materials);
-    }
-    );
-
-
+      platform.scene.add(gltf.scene);
+    });    
   }
 
   //检测是否边框碰撞

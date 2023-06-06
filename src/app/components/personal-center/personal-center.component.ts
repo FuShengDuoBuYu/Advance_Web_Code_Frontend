@@ -24,12 +24,16 @@ export class PersonalCenterComponent implements OnInit, OnDestroy {
   showForm = false;
   showChart = true;
   showContent = false;
+  public role: string | undefined;
 
   constructor(public http: HttpClient) {
+    // @ts-ignore
+    this.role = localStorage.getItem('role');
   }
 
   ngOnInit() {
     document.title = "个人中心";
+    this.loadInfo();
   }
 
 
@@ -67,7 +71,7 @@ export class PersonalCenterComponent implements OnInit, OnDestroy {
     const httpOptions = {
       headers: new HttpHeaders({'Content-Type': 'application/json', token: localStorage.getItem('token')!})
     };
-    const api = environment.apiPrefix + "/user/chart/line";
+    const api = environment.apiPrefix + "/user/chart/getSevenDaysDuration";
 
     this.http.get(api, httpOptions).subscribe((res: any) => {
         if (res.success) {
@@ -77,16 +81,16 @@ export class PersonalCenterComponent implements OnInit, OnDestroy {
         }
         const option = {
           title: {
-            text: '本周学习时长'
+            text: '近七日学习时长'
           },
           xAxis: {
             type: 'category',
-            name: '日期',
-            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+            name: '过去天数',
+            data: ['1', '2', '3', '4', '5', '6', '7']
           },
           yAxis: {
             type: 'value',
-            name: '学习时长/h'
+            name: '学习时长'
           },
           series: [
             {
@@ -104,16 +108,16 @@ export class PersonalCenterComponent implements OnInit, OnDestroy {
         // Use default data to display the chart
         const option = {
           title: {
-            text: '本周学习时长'
+            text: '近七日学习时长'
           },
           xAxis: {
             type: 'category',
-            name: '日期',
-            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+            name: '过去天数',
+            data: ['1', '2', '3', '4', '5', '6', '7']
           },
           yAxis: {
             type: 'value',
-            name: '学习时长/h'
+            name: '学习时长'
           },
           series: [
             {
@@ -152,7 +156,7 @@ export class PersonalCenterComponent implements OnInit, OnDestroy {
     const httpOptions = {
       headers: new HttpHeaders({'Content-Type': 'application/json', token: localStorage.getItem('token')!})
     };
-    const api = environment.apiPrefix + "/user/chart/pie";
+    const api = environment.apiPrefix + "/user/chart/getCourseChatTimes";
 
     this.http.get(api, httpOptions).subscribe((res: any) => {
         if (res.success) {
@@ -580,7 +584,7 @@ export class PersonalCenterComponent implements OnInit, OnDestroy {
     const httpOptions = {
       headers: new HttpHeaders({'Content-Type': 'application/json', token: localStorage.getItem('token')!})
     };
-    const api = environment.apiPrefix + "/user/chart/bar";
+    const api = environment.apiPrefix + "/user/getConnectDuration";
 
     this.http.get(api, httpOptions).subscribe((res: any) => {
         if (res.success) {

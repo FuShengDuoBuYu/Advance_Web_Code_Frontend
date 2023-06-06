@@ -16,10 +16,10 @@
 - [ ] TODO5
 
 张峻安 李春阳
-- [ ] TODO2
-- [ ] TODO6
-- [ ] TODO8
-- [ ] TODO9
+- [x] TODO2
+- [x] TODO6
+- [x] TODO8
+- [x] TODO9
 - [ ] TODO10
 
 
@@ -54,7 +54,7 @@
 ---
 ### 3.1 项目的使用技术栈
 - 前端: `three.js` `socket.io` `echarts` `Angular`
-- 后端: `springboot` `mysql` `socket.io` `mybatis`
+- 后端: `springboot` `mysql` `socket.io` `spring-data-jpa`
 ---
 ### 3.2 项目的组织结构与文件说明
 #### 3.2.1 前端项目结构
@@ -180,7 +180,80 @@
 - 更多的系统功能将会在演示视频中展示,如下视频所示:
 > TODO11
 #### 3.2.2 后端项目结构
+后端项目基于`SpringBoot`搭建，使用`spring-data-jpa`实现持久化，使用`socket.io`实现多人在线交互。项目结构如下：
 > TODO2
+```bash
+├── .github
+│   └── workflows # github action的配置文件
+│       └── build.yml
+├── .gitignore
+├── Dockerfile
+├── mvnw
+├── mvnw.cmd
+├── pom.xml
+└── src # 项目源代码
+    ├── main
+    │   ├── java
+    │   │   └── com
+    │   │       └── se
+    │   │           └── advancedweb
+    │   │               ├── AdvancedwebApplication.java # 项目启动类
+    │   │               ├── Interceptor
+    │   │               │   └── AuthInterceptor.java # token验证拦截器
+    │   │               ├── Swagger2.java # swagger2配置类
+    │   │               ├── common
+    │   │               │   ├── GlobalExceptionHandler.java # 全局异常处理类
+    │   │               │   └── VerifyToken.java # token验证注解
+    │   │               ├── config
+    │   │               │   └── InterceptorConfig.java # 拦截器配置类
+    │   │               ├── controller
+    │   │               │   └── UserController.java # 用户相关的controller
+    │   │               ├── entity # 实体类
+    │   │               │   ├── Course.java
+    │   │               │   ├── CourseSelection.java
+    │   │               │   ├── User.java
+    │   │               │   ├── UserChatMessage.java
+    │   │               │   ├── UserConnectDuration.java
+    │   │               │   ├── UserLoginHistory.java
+    │   │               │   └── VO # 用于返回给前端的实体类
+    │   │               │       ├── CourseStudentVO.java
+    │   │               │       └── CourseTeacherVO.java
+    │   │               ├── mapper # JPA的mapper
+    │   │               │   ├── CourseMapper.java
+    │   │               │   ├── CourseSelectionMapper.java
+    │   │               │   ├── UserChatMessageMapper.java
+    │   │               │   ├── UserConnectDurationMapper.java
+    │   │               │   ├── UserLoginHistoryMapper.java
+    │   │               │   └── UserMapper.java
+    │   │               ├── service # 服务层
+    │   │               │   ├── UserService.java # 用户服务接口
+    │   │               │   └── impl
+    │   │               │       └── UserServiceImpl.java
+    │   │               ├── socket # socket相关
+    │   │               │   ├── BlockInfo.java # 方块信息
+    │   │               │   ├── ClientCache.java # 客户端缓存
+    │   │               │   ├── SocketIOConfig.java # socket事件配置
+    │   │               │   └── UserInfo.java # 用户信息
+    │   │               └── util # 工具类
+    │   │                   ├── ConstVariable.java # 常量
+    │   │                   ├── MossAPI.java # moss api
+    │   │                   ├── OpenAIAPI.java # openai api
+    │   │                   ├── Response.java # 统一返回格式
+    │   │                   └── TokenUtil.java # token工具类
+    │   └── resources
+    │       ├── META-INF
+    │       │   └── MANIFEST.MF
+    │       └── application.properties # 项目配置文件
+    └── test
+        └── java
+            └── com
+                └── se
+                    └── advancedweb
+                        ├── AdvancedwebApplicationTests.java
+                        └── service
+                            └── impl
+                                └── UserServiceImplTest.java # 用户服务测试类
+```
 ---
 
 ### 3.2 项目评分点梳理设计与实现
@@ -272,29 +345,8 @@ public boolean preHandle(HttpServletRequest request, HttpServletResponse respons
     Method method = handlerMethod.getMethod();
     //检查需不需要验证token
     if(method.isAnnotationPresent(VerifyToken.class)){
-        if(token == null || token == ""){
-            throw new RuntimeException("暂无token信息！请先登录获取token！");
-        }
-        String userId;
-        try {
-            userId = JWT.decode(token).getAudience().get(0);
-        } catch (JWTDecodeException j){
-            throw new RuntimeException("token非法！请重新登录！");
-        }
-        if(JWT.decode(token).getExpiresAt().compareTo(new Date())<0){
-            throw new RuntimeException("token已过期！请重新登录！");
-        }
-        String password = findUserPassword(userId);
-        if(password.equals("")){
-            throw new RuntimeException("用户不存在！请重新登录！");
-        }
         //验证token
-        JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256(password)).build();
-        try {
-            jwtVerifier.verify(token);
-        } catch (JWTVerificationException e){
-            throw new RuntimeException("token验证失败！请重新登录！");
-        }
+        //...
     }
     return true;
 }
@@ -414,6 +466,34 @@ public Response<?> getUserInfo(...) {
     - ...
 ###### 后端
 > TODO6:
+- 项目采用`RESTful`风格的接口，例如:
+    - 登录:`/user/login`
+    - 注册:`/user/register`
+    - 创建课程:`/user/createCourse`
+    - 删除课程:`/user/deleteCourse`
+    - ...
+- 项目自行编写了异常处理机制，对异常情况进行返回并对异常进行处日志记录：
+  ```java
+  @ControllerAdvice
+  public class GlobalExceptionHandler {
+    @ResponseBody
+    @ExceptionHandler(Exception.class)
+    public Object handleException(Exception e){
+      Logger LOG = LoggerFactory.getLogger(e.getClass());
+      LOG.error(e.getMessage(), e);
+      return new Response(false, e.getMessage()!=null?e.getMessage():"服务器发生错误！");
+    }
+  }
+  ```
+- 项目自行编写了统一的Response响应类，便于前端对响应结果的处理:
+  ```java
+  public class Response<T> {
+    private Boolean success; // 是否成功
+    private String message; // 返回消息
+    private T data; // 返回数据
+  }
+  ```
+- 项目使用了面向切面的设计模式，来处理用户的鉴权。具体代码详见[3.2.2.1.2](#3.2.2.1.2 后端:JWT+AOP实现鉴权处理)
 
 #### 3.2.5 项目部署(10 points)
 ##### 将项目部署到服务器上(5 points)
@@ -525,10 +605,15 @@ public Response<?> getUserInfo(...) {
 ###### 3.3.2.2.2 具体实现
 考虑到这实际上是属于项目部署的内容,因此此处就不再赘述,还请查看[项目部署](#4-项目部署)部分.
 ##### 3.3.2.3 测试驱动的开发(TDD)
+> TODO8:
 作为重要的开发方法论,`TDD`在我们的开发过程中也是必不可少的,我们在开发过程中,也是采用了`TDD`的开发方法.由于前端主要是`3D`的展示,因此主要以手动测试为主.
 
-而后端则是采用了**自动化测试**,利用`maven`
-> TODO8:
+而后端则是采用了**自动化测试**,我们使用`Junit`进行了单元测试。为了满足持续集成的需求，我们编写了针对UserServiceImpl的单元测试，覆盖后端Service的所有功能点，同时语句覆盖率达到100%。保证每次代码提交时该模块功能的正确性。
+利用`mvn test`命令即可进行测试,测试结果如下:
+![](./readme.assets/test_result.png)
+
+我们还导入了`jacoco`插件,可以生成测试覆盖率的报告,具体的测试覆盖率如下:
+![cover](./readme.assets/cover.png)
 ---
 
 ## 4 项目部署
@@ -563,6 +648,19 @@ npm run start
 此时,前端项目应当已经运行在`localhost:4200`上了,只需要在浏览器中访问该网址即可.
 #### 4.1.3 后端运行
 > TODO9:
+1. 进入后端目录
+```shell
+cd backend
+```
+2. 构建
+```bash
+mvn clean
+mvn package
+```
+3. 运行
+```bash
+java -jar target/advancedweb-0.0.1-SNAPSHOT.jar
+```
 ### 4.2 服务器部署
 根据在`3.3.2.2`中的`CI/CD`的介绍,我们是在`docker`上打包了我们的前后端,并且上传到了`docker hub`上,因此我们只需要在服务器上拉取我们的镜像,然后运行即可.
 #### 4.2.1 前端CI/CD与容器化部署

@@ -1,17 +1,22 @@
 .toolbar{
   position: absolute;
-  display: flex;
   height: 10%;
   justify-content: space-between;
-  width: 100%;
-  top: 0;
+  display: flex;
 }
 
 .chat{
   position: absolute;
   left: 5%;
-  width: 30%;
-  height: 50%;
+  bottom: 5%;
+  background: #eeeeee;
+  opacity: 0.8;
+  border-radius: 5%;
+}
+
+.robot-chat{
+  position: absolute;
+  right: 5%;
   bottom: 5%;
   background: #eeeeee;
   opacity: 0.8;
@@ -92,3 +97,7 @@ form button { width: 19%; background: rgb(130, 224, 255); border: none; padding:
   width: 95%;
 }
 
+::-webkit-scrollbar {
+  /*隐藏滚轮*/
+  display: none;
+}

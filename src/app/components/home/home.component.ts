@@ -11,6 +11,9 @@ import Recorder from 'js-audio-recorder';
 import { trigger, state, style, animate, transition } from '@angular/animations';
 import { Message } from '../message';
 import * as imageConversion from 'image-conversion';
+import { Router, ActivatedRoute } from "@angular/router";
+import { Name } from "../name";
+
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
@@ -42,7 +45,7 @@ export class HomeComponent {
 
   socket: any;
   //聊天相关
-  isShowChat = true;
+  isShowChat = false;
   isShowRobot = false;
   message = '';
   messages: Message[] = [];
@@ -60,12 +63,13 @@ export class HomeComponent {
   recorder: Recorder;
   decoder: Recorder;
   recordInterval: any;
-  constructor(private formBuilder: FormBuilder, public http: HttpClient) { }
+  constructor(private formBuilder: FormBuilder, public http: HttpClient, private router: Router, private route: ActivatedRoute) {};
+
   //当页面view加载完成后，执行ngAfterViewInit方法
   ngAfterViewInit() {
     //修改页面的title
     document.title = '主页';
-    this.ifShowChat();
+    // this.ifShowChat();
     const url = environment.socketPrefix;
     let opts = {
       query: 'roomId=' + this.roomId + '&userName=' + localStorage.getItem('role') + '-' + localStorage.getItem('username'),
@@ -84,6 +88,8 @@ export class HomeComponent {
       );
     });
 
+
+
     //接收到聊天消息
     this.socket.on('chat', (data: { userName: string; message: string,type:string }) => {
       //为romatePlayer添加speechBubble
@@ -95,12 +101,13 @@ export class HomeComponent {
           } else {
             platform.speechBubbles[name] = new SpeechBubble(platform, data.message, 150,data.type);
             platform.speechBubbles[name].player = platform.remotePlayers[name];
-            this.timers[name] = setTimeout(function () {
-              platform.speechBubbles[name].mesh.parent.remove(platform.speechBubbles[name].mesh);
-              delete platform.speechBubbles[name];
-            }, 5000);
             platform.speechBubbles[name].update(data.message,data.type)
           }
+          clearTimeout(this.timers[name])
+          this.timers[name] = setTimeout(function () {
+            platform.speechBubbles[name].mesh.parent.remove(platform.speechBubbles[name].mesh);
+            delete platform.speechBubbles[name];
+          }, 5000);
         }
       }
       //为本地player添加speechBubble
@@ -112,12 +119,13 @@ export class HomeComponent {
         } else {
           platform.speechBubbles[name] = new SpeechBubble(platform, data.message, 150,data.type);
           platform.speechBubbles[name].player = platform.player;
-          this.timers[name] = setTimeout(function () {
-            platform.speechBubbles[name].mesh.parent.remove(platform.speechBubbles[name].mesh);
-            delete platform.speechBubbles[name];
-          }, 5000);
           platform.speechBubbles[name].update(data.message,data.type)
         }
+        clearTimeout(this.timers[name]);
+        this.timers[name] = setTimeout(function () {
+          platform.speechBubbles[name].mesh.parent.remove(platform.speechBubbles[name].mesh);
+          delete platform.speechBubbles[name];
+        }, 5000);
       }
       this.output(
         data.message, data.userName, "",data.type
@@ -147,6 +155,8 @@ export class HomeComponent {
     this.observeClassroomDiv(classroomDiv!);
     const platform = new Platform(platformDiv, this.socket, classroomDiv);
     window.platform = platform;
+    // platform.nameBubbles[localStorage.getItem('role') + '-' + localStorage.getItem('username')] = new Name(platform, localStorage.getItem('username'), 150);
+    // platform.nameBubbles[localStorage.getItem('role') + '-' + localStorage.getItem('username')].player = platform.player;
     this.playerMove(platform);
     document.addEventListener('mousemove', (event) => {
       this.playerView(platform, event, platformDiv);
@@ -336,8 +346,9 @@ export class HomeComponent {
 
   //进入课程
   enterClass(index) {
-    // console.log(this.courseList[index]);
-    window.location.href = '/classroom';
+    // console.log(this.courseList[index])
+    localStorage.setItem("isReload", "true");
+    this.router.navigate(['/classroom'],{state: this.courseList[index]});
   }
 
   //创建课程
@@ -450,7 +461,7 @@ export class HomeComponent {
         {"role":this.robotMessages[i].role,"message":this.robotMessages[i].message}
       );
     }
-    
+
     const jsonObject = {
       userName: localStorage.getItem("username")!,
       message: this.robotMessage,

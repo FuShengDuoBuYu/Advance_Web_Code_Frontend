@@ -87,8 +87,8 @@ import { MatSelectModule } from '@angular/material/select';
 export class AppModule { }
 export const environment = {
   production: false,
-  apiPrefix: 'http://106.14.140.55:10086',
-  socketPrefix: 'http://106.14.140.55:10088'
-  // apiPrefix: 'http://localhost:10086',
-  // socketPrefix: 'http://localhost:10088'
+  // apiPrefix: 'http://106.14.140.55:10086',
+  // socketPrefix: 'http://106.14.140.55:10088'
+  apiPrefix: 'http://localhost:10086',
+  socketPrefix: 'http://localhost:10088'
 };

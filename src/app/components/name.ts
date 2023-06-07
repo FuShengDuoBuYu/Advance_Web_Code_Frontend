@@ -1,14 +1,14 @@
 //@ts-nocheck
 import * as THREE from 'three';
-export class SpeechBubble{
-  constructor(game, msg, size=1,type="text",height = 380){
+export class Name{
+  constructor(game, msg, size=1, height = 320,type="text"){
     this.config = { font:'Calibri', size:24, padding:10, colour:'#222', width:256, height:256 };
-
+    this.height = height;
     const planeGeometry = new THREE.PlaneGeometry(size, size);
     const planeMaterial = new THREE.MeshBasicMaterial()
     this.mesh = new THREE.Mesh(planeGeometry, planeMaterial);
     game.scene.add(this.mesh);
-    this.height = height;
+
     const self = this;
     const loader = new THREE.TextureLoader();
     loader.load(
@@ -36,7 +36,6 @@ export class SpeechBubble{
   }
 
   update(msg,type){
-    console.log(type);
     if (this.mesh===undefined) return;
 
     let context = this.context;
@@ -54,11 +53,9 @@ export class SpeechBubble{
     const bg = this.img;
     if (bg===undefined) return;
     context.clearRect(0, 0, this.config.width, this.config.height);
-    context.drawImage(bg, 0, 0,512,512, 0, 0, this.config.width, this.config.height);
+    // context.drawImage(bg, 0, 0,512,512, 0, 0, this.config.width, this.config.height);
     if(type=="text") this.wrapText(msg, context);
     //将base64转为ImageBitmap
-
-
     if(type=="image"){
       const img = new Image();
       img.src = msg;

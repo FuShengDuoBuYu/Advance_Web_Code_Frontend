@@ -5,6 +5,9 @@ import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader";
 import { GLTFLoader } from "node_modules/three/examples/jsm/loaders/GLTFLoader"
 import { DRACOLoader } from "node_modules/three/examples/jsm/loaders/DRACOLoader"
 import * as THREE from 'three';
+import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
+import { FontLoader } from "three/examples/jsm/loaders/FontLoader";
+import {Name} from "../name";
 
 export class Platform {
   constructor(platformDiv, socket, classroomDiv) {
@@ -24,6 +27,9 @@ export class Platform {
     this.remotePlayers = {};
     this.remoteColliders;
     this.speechBubbles = {};
+    this.nameBubble;
+    this.nameBubbles = {};
+    this.showIdNames = {};
     //初始化div
     this.container = document.createElement('div');
     this.container.style.width = '100%';
@@ -68,9 +74,10 @@ export class Platform {
     this.sun = light;
     this.scene.add(light);
 
+    const platform = this;
+
     //加载模型
     const loader = new FBXLoader();
-    const platform = this;
     loader.load(`assets/fbx/people/`+localStorage.getItem('roleName')+`.fbx`, function (object) {
       object.mixer = new THREE.AnimationMixer(object);
       platform.player.mixer = object.mixer;
@@ -99,11 +106,14 @@ export class Platform {
       platform.scene.add(object);
       //设置用户的object就是这个形象
       platform.player.object = object;
+      console.log(platform.player.object);
+      console.log(platform.player);
       //设置动画
       platform.animations.Idle = object.animations[0];
       //设置下一个动画
       platform.loadNextAnim(loader);
     });
+
 
     // 初始化user参数
     this.socket.emit('init',{
@@ -144,6 +154,47 @@ export class Platform {
           delete platform.remotePlayers[keys[i]];
         }
       }
+      // 添加新的remoteNameBubble
+      let names = Object.keys(platform.showIdNames);
+      platform.showIdNames[localStorage.getItem('role') + '-' + localStorage.getItem('username')]
+        = localStorage.getItem('username');
+      for(let i = 0; i < remoteNames.length; i++){
+        if(names.indexOf(remoteNames[i]) == -1){
+          platform.showIdNames[remoteNames[i]] = remoteNames[i].split('-')[1];
+        }else {
+          names.splice(names.indexOf(remoteNames[i]),1);
+        }
+      }
+      for(let i = 0; i < names.length; i++){
+        if (names[i] == localStorage.getItem('role') + '-' + localStorage.getItem('username')) {
+          continue;
+        }
+        // platform.scene.remove(platform.nameBubbles[names[i]].mesh);
+        delete platform.showIdNames[names[i]];
+      }
+      let nameKeys = Object.keys(platform.speechBubbles);
+      for(let i = 0; i < nameKeys.length; i++){
+        // platform.scene.remove(platform.nameBubbles[nameKeys[i]].mesh);
+          delete platform.showIdNames[nameKeys[i]];
+      }
+      const showIdNamesKeys = Object.keys(platform.showIdNames);
+      const tempKeys = Object.keys(platform.nameBubbles);
+      const nameBubblesKeys = Object.keys(platform.nameBubbles);
+      for(let i = 0; i < showIdNamesKeys.length; i++){
+        if (nameBubblesKeys.indexOf(showIdNamesKeys[i]) == -1) {
+          platform.nameBubbles[showIdNamesKeys[i]] = new Name(platform, platform.showIdNames[showIdNamesKeys[i]], 150);
+          if (showIdNamesKeys[i] == localStorage.getItem('role') + '-' + localStorage.getItem('username')) {
+            platform.nameBubbles[showIdNamesKeys[i]].player = platform.player;
+          }else{
+            platform.nameBubbles[showIdNamesKeys[i]].player = platform.remotePlayers[showIdNamesKeys[i]];
+          }
+        }else {}
+        tempKeys.splice(tempKeys.indexOf(showIdNamesKeys[i]), 1);
+      }
+      for(let i = 0; i < tempKeys.length; i++){
+        platform.scene.remove(platform.nameBubbles[tempKeys[i]].mesh);
+        delete platform.nameBubbles[tempKeys[i]];
+      }
 		});
 
   }
@@ -170,7 +221,7 @@ export class Platform {
       }
       return;
     }
-    
+
     temp_player.object = null;
     this.remotePlayers[data.username] = temp_player;
     loader.load(`assets/fbx/people/`+data.rolename+`.fbx`, function (object) {
@@ -231,10 +282,13 @@ export class Platform {
       this.sun.position.z = this.player.object.position.z + 100;
       this.sun.target = this.player.object;
     }
-
     for (let name in this.speechBubbles) {
       this.speechBubbles[name].show(this.camera.position);
     }
+    for (let name in this.nameBubbles) {
+      this.nameBubbles[name].show(this.camera.position);
+    }
+
     this.renderer.render(this.scene, this.camera);
     requestAnimationFrame(function () { platform.animate(); });
   }
@@ -383,7 +437,7 @@ export class Platform {
       platform.environment = gltf.scene;
       platform.colliders = [];
       platform.scene.add(gltf.scene);
-    });    
+    });
   }
 
   //检测是否边框碰撞

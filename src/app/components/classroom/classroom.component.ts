@@ -11,6 +11,12 @@ import {Message} from "../message";
 import { SpeechBubble } from '../speech_bublle';
 import {animate, state, style, transition, trigger} from "@angular/animations";
 import * as imageConversion from "image-conversion";
+import { ActivatedRoute } from '@angular/router';
+import Recorder from 'js-audio-recorder';
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { Name } from "../name";
+
+
 @Component({
   selector: 'app-classroom',
   templateUrl: './classroom.component.html',
@@ -19,8 +25,8 @@ import * as imageConversion from "image-conversion";
     trigger('openClose', [
       // animation triggers go here
       state('open', style({
-        width: '30%',
-        height: '50%',
+        width: '50%',
+        height: '60%',
       })),
       state('closed', style({
         width: '0%',
@@ -38,8 +44,17 @@ import * as imageConversion from "image-conversion";
 export class ClassroomComponent {
   message: string = '';
   messages: Message[] = [];
-  isShowChat = true;
-    constructor() {
+  isShowChat = false;
+  isShowRobot = false;
+  robotMessage: '';
+  robotMessages: Message[] = [];
+  aiModel = 'moss';
+  // 录音相关
+  recorder : Recorder;
+  decoder : Recorder;
+  courseName: string;
+  // courseName = history.state.courseName;
+    constructor(private route: ActivatedRoute) {
       this.camera;
       this.cameras;
       this.stats;
@@ -59,7 +74,7 @@ export class ClassroomComponent {
       this.animations = {};
       this.scale = 0.6;
       this.actionAnimation;
-      this.roomId = "classroom";
+      this.roomId = 6;
       //动画
       // const platform = this;
       this.anims = ['Walking', 'Walking Backwards', 'Turn', 'Running', 'Pointing', 'Talking', 'Pointing Gesture'];
@@ -69,25 +84,59 @@ export class ClassroomComponent {
       this.userName = localStorage.getItem('role') + '-' + localStorage.getItem('username');
       this.timers = {};
       this.remoteData = {};
+      this.nameBubble;
+      this.nameBubbles = {};
+      this.showIdNames = {};
 
     }
   ngAfterViewInit() {
     document.title = "教室";
+    const isReload = localStorage.getItem('isReload');
+    if(isReload == 'true') {
+      localStorage.setItem('isReload', 'false');
+      window.location.reload();
+    }
+    this.courseName = history.state.courseName;
+    this.roomId = history.state.courseId;
+    this.recorder = new Recorder({
+      sampleBits: 16,         // 采样位数，支持 8 或 16，默认是16
+      sampleRate: 16000,      // 采样率，支持 11025、16000、22050、24000、44100、48000，默认是16000
+      numChannels: 1,         // 声道，支持 1 或 2，默认是1
+      compiling: true,       // 是否边录边转换，默认是false
+    });
+    // this.ifShowChat();
     this.init();
     this.initSocket();
     this.render();
-    this.playerView(this);
-    this.playerMove(this);
   }
 
-  ifShowChat(){
-    console.log("ifShowChat",this.isShowChat)
+  //是否显示聊天框
+  ifShowChat() {
     this.isShowChat = !this.isShowChat;
+    let chatDiv = document.getElementById('chatDiv');
+    if(this.isShowChat) {
+      chatDiv!.style.display = 'block';
+    }
+    else {
+      chatDiv!.style.display = 'none';
+    }
+  }
+
+  //是否显示机器人
+  ifShowRobot() {
+    this.isShowRobot = !this.isShowRobot;
+    let robotDiv = document.getElementById('robotDiv');
+    if(this.isShowRobot) {
+      robotDiv!.style.display = 'block';
+    }
+    else {
+      robotDiv!.style.display = 'none';
+    }
   }
 
   //获取用户输入的图片文件
   view(){
-    const file = document.getElementById('demo').files[0];
+    const file = document.getElementById('input_image').files[0];
     console.log(file);
     imageConversion.compressAccurately(file,200).then(res=>{
       //The res in the promise is a compressed Blob type (which can be treated as a File type) file;
@@ -120,9 +169,7 @@ export class ClassroomComponent {
     this.socket.on('connect', () => {
       console.log('connect')
       this.output(
-        '<span class="connect-msg">The client has connected with the server. Username: ' +
-        this.userName + ' Room: ' + this.roomId +
-        '</span>'
+        "您已连接到服务器!",localStorage.getItem('username'),"connect-msg"
       );
     });
     this.socket.on('chat', (data: { userName: string; message: string,type:string }) => {
@@ -133,14 +180,15 @@ export class ClassroomComponent {
           if (speech !== undefined) {
             speech.update(data.message,data.type);
           } else {
-            platform.speechBubbles[name] = new SpeechBubble(platform, data.message, 150,data.type);
+            platform.speechBubbles[name] = new SpeechBubble(platform, data.message, 150,data.type,260);
             platform.speechBubbles[name].player = platform.remotePlayers[name];
-            this.timers[name] = setTimeout(function () {
-              platform.speechBubbles[name].mesh.parent.remove(platform.speechBubbles[name].mesh);
-              delete platform.speechBubbles[name];
-            }, 5000);
             platform.speechBubbles[name].update(data.message,data.type)
           }
+          clearTimeout(this.timers[name]);
+          this.timers[name] = setTimeout(function () {
+             platform.speechBubbles[name].mesh.parent.remove(platform.speechBubbles[name].mesh);
+            delete platform.speechBubbles[name];
+          }, 5000);
         }
       }
       //为本地player添加speechBubble
@@ -150,26 +198,29 @@ export class ClassroomComponent {
         if (speech !== undefined) {
           speech.update(data.message,data.type);
         } else {
-          platform.speechBubbles[name] = new SpeechBubble(platform, data.message, 150,data.type);
+          platform.speechBubbles[name] = new SpeechBubble(platform, data.message, 150,data.type,260);
           platform.speechBubbles[name].player = platform.player;
-          this.timers[name] = setTimeout(function () {
-            platform.speechBubbles[name].mesh.parent.remove(platform.speechBubbles[name].mesh);
-            delete platform.speechBubbles[name];
-          }, 5000);
           platform.speechBubbles[name].update(data.message,data.type)
         }
+        clearTimeout(this.timers[name]);
+        this.timers[name] = setTimeout(function () {
+          platform.speechBubbles[name].mesh.parent.remove(platform.speechBubbles[name].mesh);
+          delete platform.speechBubbles[name];
+        }, 5000);
       }
       this.output(
         data.message, data.userName, "",data.type
       );
     });
     this.socket.on('disconnect', () => {
-      this.output('<span class="disconnect-msg">The client has disconnected!</span>');
+      this.output("您已断开连接!",localStorage.getItem('username'),"disconnect-msg");
     });
     this.socket.on('reconnect_attempt', (attempts: string) => {
       console.log('Try to reconnect at ' + attempts + ' attempt(s).');
     });
-
+    this.socket.on("AI_assistant", (data: { message: string }) => {
+      this.robotMessages.push(new Message(new Date().toLocaleTimeString(), data.message, this.aiModel, 'assistant',"","text"));
+    });
     // 初始化user参数
     this.socket.emit('init',{
       rolename: localStorage.getItem('roleName'),
@@ -181,8 +232,7 @@ export class ClassroomComponent {
     });
 
     this.socket.on('remoteData', function(data){
-      // console.log("remoteData");
-      // console.log(data);
+
       platform.remoteData = data;
       // 获取this.remotePlayers中的所有key
       var keys = Object.keys(platform.remotePlayers);
@@ -201,9 +251,47 @@ export class ClassroomComponent {
           delete platform.remotePlayers[keys[i]];
         }
       }
-      // console.log(remoteNames);
-      // console.log(platform.remotePlayers)
-      // console.log(platform.scene.children)
+      // 添加新的remoteNameBubble
+      let names = Object.keys(platform.showIdNames);
+      platform.showIdNames[localStorage.getItem('role') + '-' + localStorage.getItem('username')]
+        = localStorage.getItem('username');
+      for(let i = 0; i < remoteNames.length; i++){
+        if(names.indexOf(remoteNames[i]) == -1){
+          platform.showIdNames[remoteNames[i]] = remoteNames[i].split('-')[1];
+        }else {
+          names.splice(names.indexOf(remoteNames[i]),1);
+        }
+      }
+      for(let i = 0; i < names.length; i++){
+        if (names[i] == localStorage.getItem('role') + '-' + localStorage.getItem('username')) {
+          continue;
+        }
+        // platform.scene.remove(platform.nameBubbles[names[i]].mesh);
+        delete platform.showIdNames[names[i]];
+      }
+      let nameKeys = Object.keys(platform.speechBubbles);
+      for(let i = 0; i < nameKeys.length; i++){
+        // platform.scene.remove(platform.nameBubbles[nameKeys[i]].mesh);
+        delete platform.showIdNames[nameKeys[i]];
+      }
+      const showIdNamesKeys = Object.keys(platform.showIdNames);
+      const tempKeys = Object.keys(platform.nameBubbles);
+      const nameBubblesKeys = Object.keys(platform.nameBubbles);
+      for(let i = 0; i < showIdNamesKeys.length; i++){
+        if (nameBubblesKeys.indexOf(showIdNamesKeys[i]) == -1) {
+          platform.nameBubbles[showIdNamesKeys[i]] = new Name(platform, platform.showIdNames[showIdNamesKeys[i]], 150,200);
+          if (showIdNamesKeys[i] == localStorage.getItem('role') + '-' + localStorage.getItem('username')) {
+            platform.nameBubbles[showIdNamesKeys[i]].player = platform.player;
+          }else{
+            platform.nameBubbles[showIdNamesKeys[i]].player = platform.remotePlayers[showIdNamesKeys[i]];
+          }
+        }else {}
+        tempKeys.splice(tempKeys.indexOf(showIdNamesKeys[i]), 1);
+      }
+      for(let i = 0; i < tempKeys.length; i++){
+        platform.scene.remove(platform.nameBubbles[tempKeys[i]].mesh);
+        delete platform.nameBubbles[tempKeys[i]];
+      }
     });
     let _this = this;
     // 初始化block参数
@@ -216,7 +304,6 @@ export class ClassroomComponent {
     })
 
     this.socket.on('deleteBlock', function(data){
-      console.log("deleteBlock");
       for(let i = 0; i < _this.objects.length; i++){
         if(_this.objects[i].position.x == data.x1 && _this.objects[i].position.y1 == data.y && _this.objects[i].position.z == data.z1){
           _this.scene.remove(_this.objects[i]);
@@ -225,6 +312,10 @@ export class ClassroomComponent {
         }
       }
     })
+    this.socket.on('speech', (data: { userName: string; message: string }) => {;
+      var snd = new Audio(data.message);
+      snd.play();
+    });
 
   }
 
@@ -282,12 +373,28 @@ export class ClassroomComponent {
       platform.scene.add(object);
       //设置用户的object就是这个形象
       temp_player.object = object;
+      console.log("loadRemotePlayer",temp_player);
+      console.log("loadRemotePlayer",platform.remotePlayers);
     });
+
   }
+
+  setPlayerAction(player,name) {
+    console.log(this.animations[name],"setPlayerAction");
+    //设置动作
+    const action = player.mixer.clipAction(this.animations[name]);
+    console.log(action,"action")
+    action.time = 0.5;
+    //停止所有动作
+    player.mixer.stopAllAction();
+    player.action = name;
+    player.actionTime = Date.now();
+    action.fadeIn(0);
+    action.play();
+  }
+
   onSubmit() {
     // 获取到表单里的数据
-    console.log(this.userName);
-    console.log(this.message);
     this.sendMessage();
   }
 
@@ -300,6 +407,95 @@ export class ClassroomComponent {
     };
     this.socket.emit('chat', jsonObject);
     this.message = '';
+  }
+  //用户点击语音聊天
+  onChooseVoice(){
+    let voiceBtn = document.getElementById('voice_btn');
+    //获取btn的文本
+    let voiceBtnText = voiceBtn!.innerText;
+    if(voiceBtnText == '开启聊天'){
+      voiceBtn!.innerText = '关闭聊天';
+      this.startRecording();
+    }
+    else{
+      voiceBtn!.innerText = '开启聊天';
+      this.stopRecording();
+    }
+  }
+
+  startRecording() {
+    this.recorder.start();
+    const that = this;
+    this.recordInterval = setInterval(function () {
+      that.recorder.stop();
+      let blob: Blob = that.recorder.getWAVBlob();
+      that.recorder.start();
+      // 编码成为字符串
+      const reader = new FileReader();
+      reader.readAsDataURL(blob);
+      reader.onload = (e) => {
+        that.socket.emit('speech', {
+          roomId: that.roomId,
+          userName: localStorage.getItem('role') + '-' + localStorage.getItem('username'),
+          message: reader.result
+        });
+      }
+    }, 2000);
+  }
+
+  stopRecording() {
+    this.recorder.stop();
+    clearInterval(this.recordInterval);
+    let blob: Blob = this.recorder.getWAVBlob();
+    // 编码成为字符串
+    const reader = new FileReader();
+    reader.readAsDataURL(blob);
+    reader.onload = (e) => {
+      this.socket.emit('speech', {
+        roomId: this.roomId,
+        userName: localStorage.getItem('role') + '-' + localStorage.getItem('username'),
+        message: reader.result
+      });
+    }
+  }
+
+  //机器人聊天
+  onRobotSubmit(){
+    let robotMessage = new Message(
+      //当前时间
+      new Date().toLocaleTimeString(),
+      //消息内容
+      this.robotMessage,
+      //用户名
+      localStorage.getItem("username")!,
+      //角色
+      "user",
+      "",
+      //消息类型
+      "text");
+    this.robotMessages.push(robotMessage);
+
+    //发送消息
+    //设置历史消息
+    let historyMessage = [];
+    for(let i = 0;i<this.robotMessages.length;i++){
+      historyMessage.push(
+        {"role":this.robotMessages[i].role,"message":this.robotMessages[i].message}
+      );
+    }
+
+    const jsonObject = {
+      userName: localStorage.getItem("username")!,
+      message: this.robotMessage,
+      model: this.aiModel,
+      dataList:historyMessage
+    };
+    this.socket.emit('AI_assistant', jsonObject);
+    this.robotMessage = "";
+  }
+  //点击选择图片,展示本机图片文件夹
+  onChooseImage() {
+    document.getElementById('input_image')!.click();
   }
 
   output(msg: string,username:string,other:string = '',type:string = 'notification') {
@@ -353,6 +549,13 @@ export class ClassroomComponent {
     //加载模型
     const loader = new FBXLoader();
     const platform = this;
+    loader.load(`assets/fbx/CLASSROOM.fbx`, function (object) {
+      object.scale.set(0.5, 0.5, 0.5);
+      object.position.set(-100,45,0);
+       platform.scene.add(object);
+
+    });
+
     loader.load(`assets/fbx/people/`+localStorage.getItem('roleName')+`.fbx`, function (object) {
       object.mixer = new THREE.AnimationMixer(object);
       platform.player.mixer = object.mixer;
@@ -428,57 +631,9 @@ export class ClassroomComponent {
       this.cubeMaterial.needsUpdate = true;
     })
 
-
-    let floorMat = new THREE.MeshStandardMaterial( {
-      roughness: 0.8,
-      color: 0xffffff,
-      metalness: 0.2,
-      bumpScale: 0.0005
-    } );
-    textureLoader.load( 'assets/texture/hardwood2_diffuse.jpg', function ( map ) {
-
-      map.wrapS = THREE.RepeatWrapping;
-      map.wrapT = THREE.RepeatWrapping;
-      map.anisotropy = 4;
-      map.repeat.set( 10, 24 );
-      map.encoding = THREE.sRGBEncoding;
-      floorMat.map = map;
-      floorMat.needsUpdate = true;
-
-    } );
-    textureLoader.load( 'assets/texture/hardwood2_bump.jpg', function ( map ) {
-
-      map.wrapS = THREE.RepeatWrapping;
-      map.wrapT = THREE.RepeatWrapping;
-      map.anisotropy = 4;
-      map.repeat.set( 10, 24 );
-      floorMat.bumpMap = map;
-      floorMat.needsUpdate = true;
-
-    } );
-    textureLoader.load( 'assets/texture/hardwood2_roughness.jpg', function ( map ) {
-
-      map.wrapS = THREE.RepeatWrapping;
-      map.wrapT = THREE.RepeatWrapping;
-      map.anisotropy = 4;
-      map.repeat.set( 10, 24 );
-      floorMat.roughnessMap = map;
-      floorMat.needsUpdate = true;
-
-    } );
-    // grid
-    //
     const gridHelper = new THREE.GridHelper( 1000, 20 );
     this.scene.add( gridHelper );
 
-
-
-    //
-    const floorGeometry = new THREE.PlaneGeometry( 1000, 1000 );
-    const floorMesh = new THREE.Mesh( floorGeometry, floorMat );
-    // floorMesh.receiveShadow = true;
-    floorMesh.rotation.x = - Math.PI / 2.0;
-    this.scene.add( floorMesh );
 
     this.raycaster = new THREE.Raycaster();
     this.pointer = new THREE.Vector2();
@@ -615,6 +770,14 @@ export class ClassroomComponent {
     switch ( event.keyCode ) {
 
       case 16: this.isShiftDown = true; break;
+      //c
+      case 67:
+        this.ifShowChat();
+        break;
+      //r
+      case 82:
+        this.ifShowRobot();
+        break;
 
     }
 
@@ -641,17 +804,13 @@ export class ClassroomComponent {
     const platform = this;
     const dt = this.clock.getDelta();
     // console.log(this);
-    requestAnimationFrame(function () { platform.animate(); });
-    if (this.player.mixer !== undefined) this.player.mixer.update(dt);
-    //角色从走动自动转换为跑动
-    // if (this.player.action == 'Walking') {
-    //   const elapsedTime = Date.now() - this.player.actionTime;
-    //   if (elapsedTime > 1000 && this.player.move.forward > 0) {
-    //     this.action = 'Running';
-    //   }
-    // }
 
-    // console.log(this.player.cameras, this.player.cameras.active);
+    if (this.player.mixer !== undefined) this.player.mixer.update(dt);
+
+    for(let i in this.remotePlayers){
+      if(this.remotePlayers[i].mixer !== undefined) this.remotePlayers[i].mixer.update(dt);
+    }
+
     if (this.player.move !== undefined) this.movePlayer(dt);
     //做一下相机的位置的线性插值
     if (this.player.cameras != undefined && this.player.cameras.active != undefined) {
@@ -672,8 +831,11 @@ export class ClassroomComponent {
     for (let name in this.speechBubbles) {
       this.speechBubbles[name].show(this.camera.position);
     }
-
+    for (let name in this.nameBubbles) {
+      this.nameBubbles[name].show(this.camera.position);
+    }
     this.renderer.render(this.scene, this.camera);
+    requestAnimationFrame(function () { platform.animate(); });
   }
 
   loadNextAnim(loader) {
@@ -772,16 +934,17 @@ export class ClassroomComponent {
 
   //移动角色
   movePlayer(dt) {
+    // console.log(this.player.object.position)
     if (this.player.move.forward > 0) {
       const speed = (this.player.action == 'Running') ? 400 : 150;
       this.player.object.translateZ(dt * speed* this.scale);
     } else {
       this.player.object.translateZ(-dt * 30);
     }
-    if(this.player.object.position.z < -500 || this.player.object.position.z > 500 ||
+    if(this.player.object.position.z < -860 || this.player.object.position.z > 792 ||
       (this.player.object.position.z < 300 && this.player.object.position.z > -300 &&
       this.player.object.position.x < 150 && this.player.object.position.x > -150) ||
-      this.player.object.position.x < -500 || this.player.object.position.x > 500
+      this.player.object.position.x < -364 || this.player.object.position.x > 860
     ){
       if (this.player.move.forward > 0) {
         const speed = (this.player.action == 'Running') ? 400 : 150;
@@ -805,54 +968,38 @@ export class ClassroomComponent {
   playerMove(platform) {
     let isMove = false;
     document.addEventListener('keydown', (event) => {
-      if(isMove) return;
+      if (isMove) return;
       switch (event.keyCode) {
         case 87: // w
-          platform.playerControl1('w');
+          platform.playerControl('w');
           break;
-        //按住c后进入classroom界面
-        case 67: // c
-          window.location.href = '/classroom';
+        //c
+        case 67:
+          this.ifShowChat();
+          break;
+        //r
+        case 82:
+          this.ifShowRobot();
+          break;
       }
     }, false);
     //松手后停止
     document.addEventListener('keyup', (event) => {
       isMove = false;
-      platform.playerControl1('stop');
+      platform.playerControl('stop');
     }, false);
   }
 
   //监听用户的鼠标视角
-  playerView(platform) {
+  playerView(platform,event, platformDiv) {
     //监听一次鼠标移动的距离
-    let lastX = 0;
-    let lastY = 0;
-    let isMouseMove = false;
-    document.addEventListener('mousemove', (event) => {
-      if(isMouseMove) return;
-      isMouseMove = true;
-      const x = event.clientX;
-      const y = event.clientY;
-      const dx = x - lastX;
-      const dy = y - lastY;
-      lastX = x;
-      lastY = y;
-      platform.playerViewControl(dx, dy);
-      setTimeout(() => {
-        isMouseMove = false;
-      }, 100);
-    }, false);
-    //每100ms监听一次鼠标的位置
-    setInterval(() => {
-      //获取当前鼠标的位置
-      if(isMouseMove) return;
-      if(lastX<10){
-        platform.playerViewControl(-100, 0);
-      }
-      if(innerWidth-lastX<10){
-        platform.playerViewControl(100, 0);
-      }
-    }, 100);
+    //判断当前鼠标是否被锁定
+    if(document.pointerLockElement === platformDiv || document.mozPointerLockElement === platformDiv) {
+      //鼠标被锁定
+      let movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+      let movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+      platform.playerViewControl(movementX, movementY);
+    }
 
   }
 
@@ -878,13 +1025,8 @@ export class ClassroomComponent {
 
   //设置鼠标带来的视角控制
   playerViewControl(dx,dy){
-    dy = -dy;
-    dx = -dx;
-    this.player.object.rotation.y += dx * 0.002;
-    this.player.object.rotation.y = Math.max(-Math.PI, Math.min(Math.PI, this.player.object.rotation.y));
-
-    this.camera.rotation.x += dy * 0.002;
-    this.camera.rotation.x = Math.max(-Math.PI, Math.min(Math.PI, this.camera.rotation.x));
+    this.player.object.rotation.y -= dx * 0.002;
+    this.camera.rotation.x -= dy * 0.002;
   }
 }
 

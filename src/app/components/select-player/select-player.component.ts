@@ -25,7 +25,9 @@ export class SelectPlayerComponent implements OnInit {
   public playerIndex = 0;
   isLoading:boolean = true;
   style = {
-    display: 'none'
+    display: 'none',
+    height: '100%',
+    width: '100%',
   }
   //各个模型的url
   public players = [
@@ -180,7 +182,10 @@ export class SelectPlayerComponent implements OnInit {
         this.scene.add(object);
         this.isLoading = false;
         // @ts-ignore
-      this.style = null;
+      this.style = {
+        height: '100%',
+        width: '100%',
+      }
         //渲染
         // this.renderer.render(this.scene, this.camera)
     });
@@ -190,7 +195,9 @@ export class SelectPlayerComponent implements OnInit {
   selectPlayer(playerIndex:number) {
     this.isLoading = true;
     this.style = {
-      display: 'none'
+      display: 'none',
+      height: '100%',
+      width: '100%',
     };
     this.setCardStyle(playerIndex);
     this.renderPlayer(playerIndex);

@@ -1,12 +1,12 @@
 const classroom_socket = require('socket.io-client');
 let classroom_opts = {
-  query: 'roomId=' + 1 + '&userName=student'+ '-' + "gzt",
+  query: 'roomId=' + 10 + '&userName=teacher'+ '-' + "test_user",
   transports: ['websocket']
 };
 let classroom_socketPrefix = 'http://106.14.140.55:10088';
 
-let classroom_test_userName = "student-gzt";
-let classroom_test_roomId = 2;
+let classroom_test_userName = "teacher-test_user";
+let classroom_test_roomId = 10;
 
 // 测试连接
 describe("Test the socket connect ", () => {
@@ -46,10 +46,17 @@ describe("Test the socket create block", () => {
 
   it("block:success for create block", (done) => {
     //@ts-ignore
-    // io.on('addBlock', (data) => {
-    //   console.log(data);
-    //   done();
-    // });
+    io.on('addBlock', (data) => {
+      expect(data.roomId).toEqual(classroom_test_roomId);
+      expect(data.x1).toEqual(1);
+      expect(data.y1).toEqual(2);
+      expect(data.z1).toEqual(3);
+      expect(data.x2).toEqual(4);
+      expect(data.y2).toEqual(5);
+      expect(data.z2).toEqual(6);
+      
+      done();
+    });
     let jsonObject = {
       roomId: classroom_test_roomId,
       x1: 1,
@@ -60,7 +67,6 @@ describe("Test the socket create block", () => {
       z2: 6
     };
     io.emit('addBlock', jsonObject);
-    done();
   });
 });
 
@@ -76,10 +82,16 @@ describe("Test the socket delete block", () => {
 
   it("block:success for delete block", (done) => {
     //@ts-ignore
-    // io.on('deleteBlock', (data) => {
-    //   console.log(data);
-    //   done();
-    // });
+    io.on('deleteBlock', (data) => {
+      expect(data.roomId).toEqual(classroom_test_roomId);
+      expect(data.x1).toEqual(1);
+      expect(data.y1).toEqual(2);
+      expect(data.z1).toEqual(3);
+      expect(data.x2).toEqual(4);
+      expect(data.y2).toEqual(5);
+      expect(data.z2).toEqual(6);
+      done();
+    });
     let jsonObject = {
       roomId: classroom_test_roomId,
       x1: 1,
@@ -90,6 +102,5 @@ describe("Test the socket delete block", () => {
       z2: 6
     };
     io.emit('deleteBlock', jsonObject);
-    done();
   });
 });

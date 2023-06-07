@@ -1,9 +1,10 @@
 <mat-toolbar color="primary" class="toolbar">
   <span>{{courseName}}</span>
+  <span>滑竿控制方向,单击放置方块,shift+单击取消方块</span>
   <span>'C':聊天室 'R':AI助手</span>
 </mat-toolbar>
 
-<div [@openClose]="isShowChat ? 'open' : 'closed'" class="chat" id="chatDiv" >
+<div [@openClose]="isShowChat ? 'open' : 'closed'" class="chat" id="chatDiv" style="display: none;">
   <h3 style="color: brown; text-align: center;">欢迎进入聊天室</h3>
   <div style="display: flex;height: 70%;overflow-y: scroll;">
     <div class="chat-body">

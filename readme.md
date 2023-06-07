@@ -13,7 +13,7 @@
 ### 1.2 团队分工和贡献
 |身份|成员|分工|贡献|具体完成工作|
 |:---:|:---:|:---:|:---:|:---:|
-|组长|郭仲天|前端与文档书写|25%|搭建前端项目框架,书写登录注册页面,书写选择用户页面和主页,添加人物键盘鼠标控制,构建教学楼模型,碰撞检测,选择教室,以及图片聊天,机器人聊天等|
+|组长|郭仲天|前端与文档书写|25%|搭建前端项目框架,书写登录注册页面,选择用户页面和主页,添加人物键盘鼠标控制,构建教学楼模型,碰撞检测,选择教室,以及图片聊天,机器人聊天,socketIO的接口测试|
 |组员|张峻安|后端与文档书写|25%|构建Socket通信框架，实现多人位置更新，方块放置和删除，聊天和语音的前后端socket代码；编写前后端CI/CD流程配置和dockerfile|
 |组员|崔德华|前端|25%|书写用户选择页面，添加classroom的joystick移动控制，构建classroom模型，碰撞检测，放置方块，聊天室等|
 |组员|李春阳|后端|25%|注册登录及权限验证、课程系统、可视化数据存储、ServiceImpl单元测试、聊天机器人|
@@ -827,10 +827,13 @@ userConnectDurationMapper.save(userConnectDuration);
 ##### 3.3.2.3 测试驱动的开发(TDD)
 
 > 作为重要的开发方法论,`TDD`在我们的开发过程中也是必不可少的,我们在开发过程中,也是采用了`TDD`的开发方法.
-
+###### 3.3.2.3.1 前端测试
 - 由于前端主要是`3D`的展示,因此主要以**手动测试**为主.
+- 对于前端的`socket`相关的接口,我们使用了`jest`来进行接口测试,测试的结果的内容如下:
+![test_frontend](./readme.assets/test_frontend.png)
 
-- 而后端则是采用了**自动化测试**,我们使用`Junit`进行了单元测试。为了满足持续集成的需求，我们编写了针对``UserServiceImpl`的单元测试，覆盖后端`Service`的所有功能点，同时语句覆盖率达到100%。保证每次代码提交时该模块功能的正确性。
+###### 3.3.2.3.2 后端测试
+- 后端则是采用了**自动化测试**,我们使用`Junit`进行了单元测试。为了满足持续集成的需求，我们编写了针对``UserServiceImpl`的单元测试，覆盖后端`Service`的所有功能点，同时语句覆盖率达到100%。保证每次代码提交时该模块功能的正确性。
   利用`mvn test`命令即可进行测试,测试结果如下:
   ![](./readme.assets/test_result.png)
 
@@ -915,6 +918,8 @@ jobs:
             node-version: "14.x"
         - name: Install dependencies
           run: npm install
+        - name: Run tests
+          run: npm test
         - name: Build
           run: npm run build --prod
         - name: Upload Artifact
@@ -1128,4 +1133,735 @@ jobs:
 >
 > dataList:和机器人交谈的上下文列表,用于更好的理解用户的意图
 ### 5.2 RESTful接口文档
-> TODO10:
+#### 用户注册
+
+##### 接口描述
+
+该接口用于用户注册
+
+##### 请求URL
+
+```
+POST /user/register
+```
+
+##### 请求参数
+
+> Body
+
+| 参数名   | 类型   | 是否必需 | 描述                       |
+| -------- | ------ | -------- | -------------------------- |
+| username | string | 是       | 用户名                     |
+| password | string | 是       | 密码                       |
+| role     | int    | 是       | 角色(1代表老师，2代表学生) |
+
+##### 请求示例
+
+> Body
+
+```json
+{
+    "username": "zja333",
+    "password": "123456",
+    "role": 1
+}
+```
+
+##### 响应参数
+
+| 参数名  | 类型   | 描述     |
+| ------- | ------ | -------- |
+| success | bool   | 是否成功 |
+| message | string | 提示信息 |
+
+##### 响应示例
+
+```json
+{
+    "success": true,
+    "message": "注册成功！"
+}
+```
+
+#### 用户登录
+
+##### 接口描述
+
+该接口用于用户登录
+
+##### 请求URL
+
+```
+POST /user/login
+```
+
+##### 请求参数
+
+> Body
+
+| 参数名   | 类型   | 是否必需 | 描述                       |
+| -------- | ------ | -------- | -------------------------- |
+| username | string | 是       | 用户名                     |
+| password | string | 是       | 密码                       |
+##### 请求示例
+
+> Body
+
+```json
+{
+    "username": "zja333",
+    "password": "123456"
+}
+```
+
+##### 响应参数
+
+| 参数名  | 类型   | 描述      |
+| ------- | ------ | --------- |
+| success | bool   | 是否成功  |
+| data    | object | 返回token |
+| message | string | 提示信息  |
+
+##### 响应示例
+
+```json
+{
+    "success": true,
+    "message": "登陆成功！",
+    "data": {
+        "token": 		"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyMCIsInJvbGUiOiJzdHVkZW50IiwiZXhwIjoxNjg2Mjk2ODQ2LCJpYXQiOjE2ODYwMzc2NDYsInVzZXJuYW1lIjoiemphMzMzIn0.4cPtK1AJBT-5oCElVlSs-NGYKHYHKgISltnlOsh3TGA"
+    }
+}
+```
+
+#### 获取用户信息
+
+##### 接口描述
+
+该接口用于获取用户信息
+
+##### 请求URL
+
+```
+GET /user/info
+```
+
+##### 请求参数
+
+> Headers
+
+| 参数名 | 类型   | 是否必需 | 描述      |
+| ------ | ------ | -------- | --------- |
+| Token  | string | 是       | 用户token |
+
+##### 请求示例
+
+> Headers
+
+```json
+{
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxNyIsInJvbGUiOiJzdHVkZW50IiwiZXhwIjoxNjg2MzEyMDQ2LCJpYXQiOjE2ODYwNTI4NDYsInVzZXJuYW1lIjoiY2RoMSJ9.t8sZpU4mqqTp-hwe2X3qcIfeSb0vqqpm-87Grq8W2nM",
+}
+```
+
+##### 响应参数
+
+| 参数名  | 类型   | 描述         |
+| ------- | ------ | ------------ |
+| success | bool   | 是否成功     |
+| data    | object | 返回相应数据 |
+| message | string | 提示信息     |
+
+##### 响应示例
+
+```json
+{
+    "success": true,
+    "message": "获取用户信息成功！",
+    "data": {
+        "role": 1,
+        "total_chat_times": 59,
+        "last_chat_message": "dwawd",
+        "last_login_time": "2023-06-07 09:30:37.142",
+        "total_duration": 60052,
+        "user_name": "cdh1",
+        "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxNyIsInJvbGUiOiJzdHVkZW50IiwiZXhwIjoxNjg2MzcxMjgwLCJpYXQiOjE2ODYxMTIwODAsInVzZXJuYW1lIjoiY2RoMSJ9.z9d-DU5CkHw6baQVDLKWnVSscSEux4IrmUKLICZfvCs"
+    }
+}
+```
+
+#### 老师新建课程
+
+##### 接口描述
+
+该接口用于老师新建课程
+
+##### 请求URL
+
+```
+POST /user/createCourse
+```
+
+##### 请求参数
+
+> Headers
+
+| 参数名 | 类型   | 是否必需 | 描述      |
+| ------ | ------ | -------- | --------- |
+| token  | string | 是       | 老师token |
+
+> Body
+
+| 参数名            | 类型   | 是否必需 | 描述     |
+| ----------------- | ------ | -------- | -------- |
+| courseName        | string | 是       | 课程名称 |
+| courseDescription | string | 是       | 课程描述 |
+| building          | string | 是       | 教学楼   |
+| isOver            | bool   | 是       | 是否开启 |
+
+##### 请求示例
+
+> Headers
+
+```json
+{
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxNyIsInJvbGUiOiJzdHVkZW50IiwiZXhwIjoxNjg2MzcxMjgwLCJpYXQiOjE2ODYxMTIwODAsInVzZXJuYW1lIjoiY2RoMSJ9.z9d-DU5CkHw6baQVDLKWnVSscSEux4IrmUKLICZfvCs"
+}
+```
+
+> Body
+
+```json
+{
+    "courseName": "高级Web技术",
+    "courseDescription": "基于three.js的Web3D应用开发",
+    "building": "0",
+    "isOver": false
+}
+```
+
+##### 响应参数
+
+| 参数名  | 类型   | 描述     |
+| ------- | ------ | -------- |
+| success | bool   | 是否成功 |
+| message | string | 提示信息 |
+
+##### 响应示例
+
+```json
+{
+    "success": true,
+    "message": "创建课程成功"
+}
+```
+
+#### 老师删除课程
+##### 接口描述
+
+该接口用于老师删除课程
+
+##### 请求URL
+
+```
+DELETE /user/deleteCourse
+```
+
+##### 请求参数
+
+> Headers
+
+| 参数名 | 类型   | 是否必需 | 描述      |
+| ------ | ------ | -------- | --------- |
+| token  | string | 是       | 老师token |
+
+> Body
+
+| 参数名     | 类型   | 是否必需 | 描述     |
+| ---------- | ------ | -------- | -------- |
+| courseName | string | 是       | 课程名称 |
+
+##### 请求示例
+
+> Headers
+
+```json
+{
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxNyIsInJvbGUiOiJzdHVkZW50IiwiZXhwIjoxNjg2MzcxMjgwLCJpYXQiOjE2ODYxMTIwODAsInVzZXJuYW1lIjoiY2RoMSJ9.z9d-DU5CkHw6baQVDLKWnVSscSEux4IrmUKLICZfvCs"
+}
+```
+
+> Body
+
+```json
+{
+    "courseName": "高级Web技术2"
+}
+```
+
+##### 响应参数
+
+| 参数名  | 类型   | 描述     |
+| ------- | ------ | -------- |
+| success | bool   | 是否成功 |
+| message | string | 提示信息 |
+
+##### 响应示例
+
+```json
+{
+    "success": true,
+    "message": "删除课程成功"
+}
+```
+
+#### 通过教学楼获取课程
+
+##### 接口描述
+
+该接口用于获取一个教学楼的所有课程
+
+##### 请求URL
+
+```
+GET /user/getCourseByBuilding/{building}
+```
+
+##### 请求参数
+
+> Body
+
+| 参数名   | 类型   | 是否必需 | 描述   |
+| -------- | ------ | -------- | ------ |
+| building | string | 是       | 教学楼 |
+
+##### 请求示例
+
+> Body
+
+```json
+{
+    "building": "0"
+}
+```
+
+##### 响应参数
+
+| 参数名  | 类型   | 描述     |
+| ------- | ------ | -------- |
+| success | bool   | 是否成功 |
+| message | string | 提示信息 |
+| data    | object | 课程信息 |
+
+##### 响应示例
+
+```json
+{
+    "success": true,
+    "message": "获取所有课程成功！",
+    "data": [
+        {
+            "courseId": 1,
+            "courseName": "home",
+            "courseDescription": "home页面",
+            "building": "0",
+            "isOver": 0,
+            "teacher": {
+                "userId": 2,
+                "username": "lcy",
+                "role": 2
+            }
+        },
+        //...
+    ]
+}
+```
+
+#### 学生加入课程
+
+##### 接口描述
+
+该接口用于学生加入课程
+
+##### 请求URL
+
+```
+POST /user/joinCourse
+```
+
+##### 请求参数
+
+> Headers
+
+| 参数名 | 类型   | 是否必需 | 描述      |
+| ------ | ------ | -------- | --------- |
+| Token  | string | 是       | 学生token |
+
+> Body
+
+| 参数名     | 类型   | 是否必需 | 描述     |
+| ---------- | ------ | -------- | -------- |
+| courseName | string | 是       | 课程名称 |
+
+##### 请求示例
+
+> Headers
+
+```json
+{
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxNyIsInJvbGUiOiJzdHVkZW50IiwiZXhwIjoxNjg2MzcxMjgwLCJpYXQiOjE2ODYxMTIwODAsInVzZXJuYW1lIjoiY2RoMSJ9.z9d-DU5CkHw6baQVDLKWnVSscSEux4IrmUKLICZfvCs"
+}
+```
+
+> Body
+
+```json
+{
+    "courseName": "高级Web技术"
+}
+```
+
+##### 响应参数
+
+| 参数名  | 类型   | 描述     |
+| ------- | ------ | -------- |
+| success | bool   | 是否成功 |
+| message | string | 提示信息 |
+
+##### 响应示例
+
+```json
+{
+    "success": true,
+    "message": "加入课程成功"
+}
+```
+
+#### 老师获取课程
+
+##### 接口描述
+
+该接口用于老师获取所开的课程
+
+##### 请求URL
+
+```
+GET /user/getCourse
+```
+
+##### 请求参数
+
+> Headers
+
+| 参数名 | 类型   | 是否必需 | 描述      |
+| ------ | ------ | -------- | --------- |
+| Token  | string | 是       | 老师token |
+
+##### 请求示例
+
+> Headers
+
+```json
+{
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxNyIsInJvbGUiOiJzdHVkZW50IiwiZXhwIjoxNjg2MzcxMjgwLCJpYXQiOjE2ODYxMTIwODAsInVzZXJuYW1lIjoiY2RoMSJ9.z9d-DU5CkHw6baQVDLKWnVSscSEux4IrmUKLICZfvCs"
+}
+```
+
+##### 响应参数
+
+| 参数名  | 类型   | 描述         |
+| ------- | ------ | ------------ |
+| success | bool   | 是否成功     |
+| message | string | 提示信息     |
+| data    | List   | 所开课程信息 |
+
+##### 响应示例
+
+```json
+{
+    "success": true,
+    "message": "获取课程成功",
+    "data": [
+        {
+            "courseName": "数据库设计",
+            "courseDescription": "数据库设计相关知识",
+            "students": []
+        },
+        {
+            "courseName": "高级Web技术",
+            "courseDescription": "基于three.js的Web3D应用开发",
+            "students": [
+                "zja"
+            ]
+        }
+    ]
+}
+```
+
+#### 学生获取课程
+
+##### 接口描述
+
+该接口用于学生获取所选的课程
+
+##### 请求URL
+
+```
+GET /user/getCourse
+```
+
+##### 请求参数
+
+> Headers
+
+| 参数名 | 类型   | 是否必需 | 描述      |
+| ------ | ------ | -------- | --------- |
+| Token  | string | 是       | 学生token |
+
+##### 请求示例
+
+> Headers
+
+```json
+{
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxNyIsInJvbGUiOiJzdHVkZW50IiwiZXhwIjoxNjg2MzcxMjgwLCJpYXQiOjE2ODYxMTIwODAsInVzZXJuYW1lIjoiY2RoMSJ9.z9d-DU5CkHw6baQVDLKWnVSscSEux4IrmUKLICZfvCs"
+}
+```
+
+##### 响应参数
+
+| 参数名  | 类型   | 描述         |
+| ------- | ------ | ------------ |
+| success | bool   | 是否成功     |
+| message | string | 提示信息     |
+| data    | List   | 所选课程信息 |
+
+##### 响应示例
+
+```json
+{
+    "success": true,
+    "message": "获取课程成功",
+    "data": [
+        {
+            "courseName": "高级Web技术",
+            "courseDescription": "基于three.js的Web3D应用开发",
+            "teacherName": "lcy"
+        }
+    ]
+}
+```
+
+#### 学生获取在线时间
+
+##### 接口描述
+
+该接口用于学生获取在线时间
+
+##### 请求URL
+
+```
+GET /user/getConnectDuration
+```
+
+##### 请求参数
+
+> Headers
+
+| 参数名 | 类型   | 是否必需 | 描述      |
+| ------ | ------ | -------- | --------- |
+| Token  | string | 是       | 学生token |
+
+##### 请求示例
+
+> Headers
+
+```json
+{
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxNyIsInJvbGUiOiJzdHVkZW50IiwiZXhwIjoxNjg2MzcxMjgwLCJpYXQiOjE2ODYxMTIwODAsInVzZXJuYW1lIjoiY2RoMSJ9.z9d-DU5CkHw6baQVDLKWnVSscSEux4IrmUKLICZfvCs"
+}
+```
+
+##### 响应参数
+
+| 参数名  | 类型    | 描述             |
+| ------- | ------- | ---------------- |
+| success | bool    | 是否成功         |
+| message | string  | 提示信息         |
+| data    | hashmap | 各个课程在线时长 |
+
+##### 响应示例
+
+```json
+{
+    "success": true,
+    "message": "获取用户连接时长成功(单位：秒）",
+    "data": {
+        "计算机组成": 19336,
+        "计算机网络": 10618,
+        "home": 30098
+    }
+}
+```
+
+#### 获取所有用户在线时间
+
+##### 接口描述
+
+该接口用于获取所有用户的总在线时间
+
+##### 请求URL
+
+```
+GET /user/getAllConnectDuration
+```
+
+##### 请求参数
+
+> Headers
+
+| 参数名 | 类型   | 是否必需 | 描述      |
+| ------ | ------ | -------- | --------- |
+| Token  | string | 是       | 用户token |
+
+##### 请求示例
+
+> Headers
+
+```json
+{
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxNyIsInJvbGUiOiJzdHVkZW50IiwiZXhwIjoxNjg2MzcxMjgwLCJpYXQiOjE2ODYxMTIwODAsInVzZXJuYW1lIjoiY2RoMSJ9.z9d-DU5CkHw6baQVDLKWnVSscSEux4IrmUKLICZfvCs"
+}
+```
+
+##### 响应参数
+
+| 参数名  | 类型    | 描述                 |
+| ------- | ------- | -------------------- |
+| success | bool    | 是否成功             |
+| message | string  | 提示信息             |
+| data    | hashmap | 各个用户的总在线时间 |
+
+##### 响应示例
+
+```json
+    "success": true,
+    "message": "获取所有用户连接时长成功(单位：秒）",
+    "data": {
+        "gzt": 37009,
+        "luba1": 0,
+        "zja": 2103,
+        "luba": 11989,
+    }
+}
+```
+
+#### 获取过去七天学习时长
+
+##### 接口描述
+
+该接口用于获取学生过去七天的学习时长
+
+##### 请求URL
+
+```
+GET /user/getSevenDaysDuration
+```
+
+##### 请求参数
+
+> Headers
+
+| 参数名 | 类型   | 是否必需 | 描述      |
+| ------ | ------ | -------- | --------- |
+| Token  | string | 是       | 学生token |
+
+##### 请求示例
+
+> Headers
+
+```json
+{
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxNyIsInJvbGUiOiJzdHVkZW50IiwiZXhwIjoxNjg2MzcxMjgwLCJpYXQiOjE2ODYxMTIwODAsInVzZXJuYW1lIjoiY2RoMSJ9.z9d-DU5CkHw6baQVDLKWnVSscSEux4IrmUKLICZfvCs"
+}
+```
+
+##### 响应参数
+
+| 参数名  | 类型   | 描述             |
+| ------- | ------ | ---------------- |
+| success | bool   | 是否成功         |
+| message | string | 提示信息         |
+| data    | object | 过去七天在线时长 |
+
+##### 响应示例
+
+```json
+{
+    "success": true,
+    "message": "获取用户近七天连接时长成功(单位：秒）",
+    "data": {
+        "lineValue": {
+            "0": 13,
+            "1": 55,
+            "2": 167,
+            "3": 1311,
+            "4": 158,
+            "5": 55,
+            "6": 0
+        }
+    }
+}
+```
+
+#### 获取每门课发言次数
+
+##### 接口描述
+
+该接口用于获取学生每门课发言次数
+
+##### 请求URL
+
+```
+GET /user/getCourseChatTimes
+```
+
+##### 请求参数
+
+> Headers
+
+| 参数名 | 类型   | 是否必需 | 描述      |
+| ------ | ------ | -------- | --------- |
+| Token  | string | 是       | 学生token |
+
+##### 请求示例
+
+> Headers
+
+```json
+{
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxNyIsInJvbGUiOiJzdHVkZW50IiwiZXhwIjoxNjg2MzcxMjgwLCJpYXQiOjE2ODYxMTIwODAsInVzZXJuYW1lIjoiY2RoMSJ9.z9d-DU5CkHw6baQVDLKWnVSscSEux4IrmUKLICZfvCs"
+}
+```
+
+##### 响应参数
+
+| 参数名  | 类型    | 描述                     |
+| ------- | ------- | ------------------------ |
+| success | bool    | 是否成功                 |
+| message | string  | 提示信息                 |
+| data    | hashmap | 学生在已选课程的发言次数 |
+
+##### 响应示例
+
+```json
+{
+    "success": true,
+    "message": "获取用户课程聊天次数成功",
+    "data": {
+        "计算机组成": 1,
+        "计算机网络": 10,
+        "home": 48
+    }
+}
+```

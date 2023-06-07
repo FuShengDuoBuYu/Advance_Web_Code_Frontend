@@ -1,12 +1,12 @@
 const socket = require('socket.io-client');
 let opts = {
-  query: 'roomId=' + 1 + '&userName=student'+ '-' + "gzt",
+  query: 'roomId=' + 10 + '&userName=teacher'+ '-' + "test_user",
   transports: ['websocket']
 };
 let socketPrefix = 'http://106.14.140.55:10088';
 
-let test_userName = "student-gzt";
-let test_roomId = 1;
+let test_userName = "teacher-test_user";
+let test_roomId = 10;
 // 测试连接
 describe("Test the socket connect ", () => {
   const io = socket(socketPrefix, opts);
@@ -114,12 +114,6 @@ describe("Test the socket speech ", () => {
     };
     io.emit('speech', jsonObject);
     done();
-    //todo:是否确实不发送本人
-    // io.on('speech', (data) => {
-    //   expect(data.userName).toEqual(jsonObject.userName);
-    //   expect(data.message).toEqual(jsonObject.message);
-    //   done();
-    // });
   });
 });
 

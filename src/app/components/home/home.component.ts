@@ -87,9 +87,6 @@ export class HomeComponent {
         "您已连接到服务器!",localStorage.getItem('username'),"connect-msg"
       );
     });
-
-
-
     //接收到聊天消息
     this.socket.on('chat', (data: { userName: string; message: string,type:string }) => {
       //为romatePlayer添加speechBubble
@@ -176,7 +173,7 @@ export class HomeComponent {
       compiling: true,       // 是否边录边转换，默认是false
     });
   }
-
+  
   startRecording() {
     this.recorder.start();
     const that = this;

@@ -10,19 +10,13 @@
 <body>
 <p>
   <mat-toolbar color="primary">
+    <span>个人中心</span>
+    <span class="center-spacer"></span>
     <button mat-icon-button class="center-icon" [matMenuTriggerFor]="menu2">
-      <mat-icon>menu</mat-icon>
+      <mat-icon>exit_to_app</mat-icon>
       <mat-menu #menu2="matMenu">
         <button mat-menu-item (click)="logout()">登出</button>
       </mat-menu>
-    </button>
-    <span>个人中心</span>
-    <span class="center-spacer"></span>
-    <button mat-icon-button class="center-icon favorite-icon">
-      <mat-icon>favorite</mat-icon>
-    </button>
-    <button mat-icon-button class="center-icon">
-      <mat-icon>share</mat-icon>
     </button>
   </mat-toolbar>
 </p>
@@ -30,46 +24,35 @@
 <mat-drawer-container class="example-container">
   <mat-drawer mode="side" opened>
     <mat-nav-list>
-      <a mat-list-item [matMenuTriggerFor]="menu">学习数据</a>
+      <a mat-list-item (click)="handleMenuSelection('学习时长')">学习时长</a>
+    </mat-nav-list>
+    <mat-nav-list>
+      <a mat-list-item (click)="handleMenuSelection('学习分类')">学习分类</a>
+    </mat-nav-list>
+    <mat-nav-list>
+      <a mat-list-item [matMenuTriggerFor]="menu">学习比较</a>
       <mat-menu #menu="matMenu">
         <mat-nav-list>
-          <a mat-list-item (click)="handleMenuSelection('学习时长')">学习时长</a>
-          <a mat-list-item (click)="handleMenuSelection('学习分类')">学习分类</a>
-          <a mat-list-item [matMenuTriggerFor]="submenu" (click)="$event.stopPropagation()">学习比较</a>
-          <mat-menu #submenu="matMenu">
-            <mat-nav-list>
-              <a mat-list-item (click)="handleMenuSelection('课程1')">课程1</a>
-              <a mat-list-item (click)="handleMenuSelection('课程2')">课程2</a>
-              <a mat-list-item (click)="handleMenuSelection('课程3')">课程3</a>
-            </mat-nav-list>
-          </mat-menu>
-          <a mat-list-item (click)="handleMenuSelection('课程数量')">课程数量</a>
+          <a mat-list-item (click)="handleMenuSelection('课程1')">课程1</a>
+          <a mat-list-item (click)="handleMenuSelection('课程2')">课程2</a>
+          <a mat-list-item (click)="handleMenuSelection('课程3')">课程3</a>
         </mat-nav-list>
       </mat-menu>
     </mat-nav-list>
     <mat-nav-list>
-      <a mat-list-item (click)="handleMenuSelection('账户信息')" >账户信息</a>
+      <a mat-list-item (click)="handleMenuSelection('课程数量')">课程数量</a>
     </mat-nav-list>
     <mat-nav-list>
-      <a mat-list-item (click)="handleMenuSelection('个人信息')" >个人信息</a>
-    </mat-nav-list>
-    <mat-nav-list>
-      <a mat-list-item (click)="handleMenuSelection('个人主页')" >个人主页</a>
-    </mat-nav-list>
-    <mat-nav-list>
-      <a mat-list-item (click)="handleMenuSelection('敬请期待')" >敬请期待</a>
+      <a mat-list-item (click)="handleMenuSelection('个人信息')">个人信息</a>
     </mat-nav-list>
   </mat-drawer>
   <mat-drawer-content>
     <div class="container">
-      <div  id="line" class="chart-container"></div>
-      <div  id="pie" class="chart-container"></div>
-      <div  id="radar" class="chart-container"></div>
-      <div  id="bar" class="chart-container"></div>
-      <div id="account" class="content">
-        <!-- 账户信息的内容 -->
+      <div  id="chart" class="chart-container" [class.show-chart]="showChart"></div>
+      <div id="account" class="content" [class.show-content]="showContent">
+        <button *ngIf="showForm" class="revise-password" href="">修改密码（暂未开放）</button>
         <form *ngIf="showForm" class="revise-password">
-          <mat-form-field appearance="fill">
+<!--          <mat-form-field appearance="fill">
             <mat-label>请输入</mat-label>
             <input matInput >
             <mat-hint>原密码</mat-hint>
@@ -83,15 +66,23 @@
             <mat-label>请输入</mat-label>
             <input matInput >
             <mat-hint>再次输入新密码</mat-hint>
-          </mat-form-field>
+          </mat-form-field>-->
         </form>
       </div>
-      <div id="profile" class="content">
+      <div id="profile" class="info" [class.show-content]="showContent">
         <!-- 个人信息的内容 -->
         <table *ngIf="showTable" class="personal-info-table">
           <tr>
             <th>姓名</th>
             <td>{{ personalInfo?.name }}</td>
+          </tr>
+          <tr>
+            <th>角色</th>
+            <td>{{ role }}</td>
+          </tr>
+          <tr>
+            <th>上次登录时间</th>
+            <td>{{ personalInfo?.login }}</td>
           </tr>
           <tr>
             <th>最喜欢的课程</th>
@@ -102,17 +93,15 @@
             <td>{{ personalInfo?.time }}</td>
           </tr>
           <tr>
-            <th>发言次数</th>
+            <th>发言总次数</th>
             <td>{{ personalInfo?.number }}</td>
+          </tr>
+          <tr>
+            <th>最近发言</th>
+            <td>{{ personalInfo?.say }}</td>
           </tr>
           <!-- 其他个人信息字段的行 -->
         </table>
-      </div>
-      <div id="homepage" class="content">
-        <!-- 个人主页的内容 -->
-      </div>
-      <div id="coming-soon" class="content">
-        <!-- 敬请期待的内容 -->
       </div>
     </div>
   </mat-drawer-content>

@@ -10,7 +10,8 @@ import { FontLoader } from "three/examples/jsm/loaders/FontLoader";
 import {Name} from "../name";
 
 export class Platform {
-  constructor(platformDiv, socket, classroomDiv) {
+  constructor(platformDiv, socket, classroomDiv,home = null) {
+    this.home = home;
     this.classroomDiv = classroomDiv;
     this.socket = socket;
     this.container;
@@ -437,6 +438,9 @@ export class Platform {
       platform.environment = gltf.scene;
       platform.colliders = [];
       platform.scene.add(gltf.scene);
+      console.log('加载环境地图成功');
+      platform.home.isLoading = false;
+      platform.home.style = null;
     });
   }
 

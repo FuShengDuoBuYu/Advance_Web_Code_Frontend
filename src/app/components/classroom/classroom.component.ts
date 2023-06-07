@@ -53,6 +53,10 @@ export class ClassroomComponent {
   recorder : Recorder;
   decoder : Recorder;
   courseName: string;
+  isLoading: boolean = true;
+  style = {
+    'display': 'none'
+  };
   // courseName = history.state.courseName;
     constructor(private route: ActivatedRoute) {
       this.camera;
@@ -319,6 +323,16 @@ export class ClassroomComponent {
 
   }
 
+  // 点击按钮后跳转到个人中心
+  navigateToPersonalCenter() {
+    window.location.href = '/personalCenter';
+  }
+
+  navigateToHome(){
+    localStorage.setItem("isReload", "true");
+    window.location.href = '/home';
+  }
+
   loadRemotePlayer(loader, data) {
     var temp_player = {};
     const platform = this;
@@ -373,8 +387,6 @@ export class ClassroomComponent {
       platform.scene.add(object);
       //设置用户的object就是这个形象
       temp_player.object = object;
-      console.log("loadRemotePlayer",temp_player);
-      console.log("loadRemotePlayer",platform.remotePlayers);
     });
 
   }
@@ -553,7 +565,8 @@ export class ClassroomComponent {
       object.scale.set(0.5, 0.5, 0.5);
       object.position.set(-100,45,0);
        platform.scene.add(object);
-
+      platform.isLoading = false;
+      platform.style = null;
     });
 
     loader.load(`assets/fbx/people/`+localStorage.getItem('roleName')+`.fbx`, function (object) {

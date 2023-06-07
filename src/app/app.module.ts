@@ -15,6 +15,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatCardModule } from '@angular/material/card';
 import {MatRadioModule} from '@angular/material/radio';
+import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 // sidenav
 import {MatSidenavModule} from '@angular/material/sidenav';
 // button-toggle
@@ -71,7 +72,7 @@ import { MatSelectModule } from '@angular/material/select';
     MatMenuModule,
     MatButtonToggleModule,
     MatSelectModule,
-
+    MatProgressSpinnerModule,
 
     HttpClientModule,
     HttpClientJsonpModule,

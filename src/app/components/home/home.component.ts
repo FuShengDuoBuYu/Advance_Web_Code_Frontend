@@ -42,7 +42,10 @@ export class HomeComponent {
   userName: string | null = localStorage.getItem('role') + '-' + localStorage.getItem('username');
   role: string | null = localStorage.getItem('role');
   roomId: number = 1;
-
+  isLoading: boolean = true;
+  style = {
+    'display': 'none'
+  };
   socket: any;
   //聊天相关
   isShowChat = false;
@@ -67,6 +70,10 @@ export class HomeComponent {
 
   //当页面view加载完成后，执行ngAfterViewInit方法
   ngAfterViewInit() {
+    if (localStorage.getItem('isReload') == 'true') {
+      location.reload();
+      localStorage.setItem('isReload', 'false');
+    }
     //修改页面的title
     document.title = '主页';
     // this.ifShowChat();
@@ -150,7 +157,7 @@ export class HomeComponent {
     });
     const classroomDiv = document.getElementById('classroom-dialog');
     this.observeClassroomDiv(classroomDiv!);
-    const platform = new Platform(platformDiv, this.socket, classroomDiv);
+    const platform = new Platform(platformDiv, this.socket, classroomDiv,this);
     window.platform = platform;
     // platform.nameBubbles[localStorage.getItem('role') + '-' + localStorage.getItem('username')] = new Name(platform, localStorage.getItem('username'), 150);
     // platform.nameBubbles[localStorage.getItem('role') + '-' + localStorage.getItem('username')].player = platform.player;
@@ -173,7 +180,7 @@ export class HomeComponent {
       compiling: true,       // 是否边录边转换，默认是false
     });
   }
-  
+
   startRecording() {
     this.recorder.start();
     const that = this;
@@ -280,6 +287,7 @@ export class HomeComponent {
   navigateToPersonalCenter() {
     window.location.href = '/personalCenter';
   }
+
 
   playerMove(platform) {
     let isMove = false;

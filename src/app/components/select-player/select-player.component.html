@@ -1,4 +1,10 @@
-<div style="height: 100%;width: 100%;">
+<div class="loading_page"*ngIf="isLoading">
+  <mat-progress-spinner  mode="indeterminate" diameter="50"
+                         style="width: 100px;left: 45%;top: 40%;height: 60px"></mat-progress-spinner>
+  <!--  <span>资源加载中，请耐心等待...</span>-->
+</div>
+
+<div [style]="style">
   <mat-toolbar color="primary" class="toolbar">
     <span>选择虚拟角色</span>
     <span>您已经选择了  {{players[playerIndex].name}}</span>

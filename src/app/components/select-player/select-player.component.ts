@@ -23,6 +23,10 @@ export class SelectPlayerComponent implements OnInit {
   private mixer:THREE.AnimationMixer = new THREE.AnimationMixer(this.player);
   private controls:OrbitControls = new OrbitControls(this.camera, this.renderer.domElement);
   public playerIndex = 0;
+  isLoading:boolean = true;
+  style = {
+    display: 'none'
+  }
   //各个模型的url
   public players = [
     {
@@ -174,6 +178,9 @@ export class SelectPlayerComponent implements OnInit {
           }
         });
         this.scene.add(object);
+        this.isLoading = false;
+        // @ts-ignore
+      this.style = null;
         //渲染
         // this.renderer.render(this.scene, this.camera)
     });
@@ -181,6 +188,10 @@ export class SelectPlayerComponent implements OnInit {
   }
 
   selectPlayer(playerIndex:number) {
+    this.isLoading = true;
+    this.style = {
+      display: 'none'
+    };
     this.setCardStyle(playerIndex);
     this.renderPlayer(playerIndex);
   }
@@ -198,14 +209,14 @@ export class SelectPlayerComponent implements OnInit {
         //@ts-ignore
         cardView.children[i].style.backgroundColor = 'white';
       }
-    } 
+    }
   }
 
   // 用户确定选中角色
   comfirmPlayer() {
     // 保存用户选择的角色
     localStorage.setItem('roleName', this.currentPlayerName);
-    
+
     window.location.href = '/home';
   }
 

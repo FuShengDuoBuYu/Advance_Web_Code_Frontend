@@ -1,62 +1,77 @@
-<mat-toolbar color="primary" class="toolbar">
-  <span>{{courseName}}</span>
-  <span>滑竿控制方向,单击放置方块,shift+单击取消方块</span>
-  <span>'C':聊天室 'R':AI助手</span>
-</mat-toolbar>
-
-<div [@openClose]="isShowChat ? 'open' : 'closed'" class="chat" id="chatDiv" style="display: none;">
-  <h3 style="color: brown; text-align: center;">欢迎进入聊天室</h3>
-  <div style="display: flex;height: 70%;overflow-y: scroll;">
-    <div class="chat-body">
-      <mat-nav-list style="width: 100%">
-        <mat-list-item *ngFor="let message of messages; let i = index" style="height: max-content;">
-          <span matListItemLine>{{message.role}}--{{message.username}}   @{{message.time}}</span>
-          <img [src]="message.content" style="width: 100%;height: 100%;" *ngIf="message.type === 'image'"/>
-          <!-- 图片信息 -->
-          <span matListItemTitle *ngIf="message.type === 'text'" style="display:inline-block;word-wrap:break-word;white-space:normal;font-weight: bolder;">{{message.content}}</span>
-          <span matListItemTitle *ngIf="message.type === 'notification'">{{message.content}}</span>
-          <!-- 文字信息 -->
-        </mat-list-item>
-      </mat-nav-list>
-    </div>
-  </div>
-  <div style="height: 5%;display: flex;justify-content: space-around;">
-    <input style="height: 100%;" placeholder="请输入聊天:" [(ngModel)]="message"/>
-    <button mat-raised-button color="primary" (click)="onSubmit()">发送</button>
-    <button mat-raised-button color="primary" (click)="onChooseVoice()" id="voice_btn">开启聊天</button>
-    <button mat-button color="primary" (click)="onChooseImage()">图片</button>
-    <input id="input_image" type="file" (change)="view()" style="display: none;"/>
-
-  </div>
+<div class="loading_page"*ngIf="isLoading">
+  <mat-progress-spinner  mode="indeterminate" diameter="50"
+                         style="width: 100px;left: 45%;top: 40%;height: 60px"></mat-progress-spinner>
+  <!--  <span>资源加载中，请耐心等待...</span>-->
 </div>
 
-<div [@openClose]="isShowRobot ? 'open' : 'closed'" class="robot-chat" id="robotDiv" style="display: none;">
-  <h3 style="color: brown; text-align: center;">欢迎进入机器人助手</h3>
-  <div style="display: flex;justify-content: center;margin-left: 5%;margin-right: 5%;">
-    <h4 style="text-align: center;align-items: center;">请选择你需要的机器人模型:</h4>
-    <mat-button-toggle-group #toggleBtn="matButtonToggleGroup" style="margin-left: auto;" [(ngModel)]="aiModel">
-      <mat-button-toggle value="moss">Moss</mat-button-toggle>
-      <mat-button-toggle value="gpt3.5">ChatGPT</mat-button-toggle>
-    </mat-button-toggle-group>
-  </div>
-  <div style="display: flex;height: 70%;overflow-y: scroll;">
-    <div class="chat-body">
-      <mat-nav-list style="width: 100%">
-        <mat-list-item *ngFor="let message of robotMessages; let i = index" style="height: max-content;">
-          <span matListItemLine>{{message.role}}--{{message.username}}   @{{message.time}}</span>
-          <span matListItemTitle *ngIf="message.type === 'text'" style="display:inline-block;word-wrap:break-word;white-space:normal;font-weight: bolder;">{{message.content}}</span>
-          <span matListItemTitle *ngIf="message.type === 'notification'">{{message.content}}</span>
-          <!-- 文字信息 -->
-        </mat-list-item>
-      </mat-nav-list>
+<div [style]="style">
+  <mat-toolbar color="primary" class="toolbar">
+    <button mat-icon-button matTooltip="返回" (click)="navigateToHome()">
+      <mat-icon>keyboard_backspace</mat-icon>
+    </button>
+    <span>{{courseName}}</span>
+    <span>滑竿控制方向,单击放置方块,shift+单击取消方块</span>
+    <span>'C':聊天室 'R':AI助手</span>
+    <button mat-icon-button matTooltip="个人中心" (click)="navigateToPersonalCenter()">
+      <mat-icon>personal</mat-icon>
+    </button>
+  </mat-toolbar>
+
+  <div [@openClose]="isShowChat ? 'open' : 'closed'" class="chat" id="chatDiv" style="display: none;">
+    <h3 style="color: brown; text-align: center;">欢迎进入聊天室</h3>
+    <div style="display: flex;height: 70%;overflow-y: scroll;">
+      <div class="chat-body">
+        <mat-nav-list style="width: 100%">
+          <mat-list-item *ngFor="let message of messages; let i = index" style="height: max-content;">
+            <span matListItemLine>{{message.role}}--{{message.username}}   @{{message.time}}</span>
+            <img [src]="message.content" style="width: 100%;height: 100%;" *ngIf="message.type === 'image'"/>
+            <!-- 图片信息 -->
+            <span matListItemTitle *ngIf="message.type === 'text'" style="display:inline-block;word-wrap:break-word;white-space:normal;font-weight: bolder;">{{message.content}}</span>
+            <span matListItemTitle *ngIf="message.type === 'notification'">{{message.content}}</span>
+            <!-- 文字信息 -->
+          </mat-list-item>
+        </mat-nav-list>
+      </div>
+    </div>
+    <div style="height: 5%;display: flex;justify-content: space-around;">
+      <input style="height: 100%;" placeholder="请输入聊天:" [(ngModel)]="message"/>
+      <button mat-raised-button color="primary" (click)="onSubmit()">发送</button>
+      <button mat-raised-button color="primary" (click)="onChooseVoice()" id="voice_btn">开启聊天</button>
+      <button mat-button color="primary" (click)="onChooseImage()">图片</button>
+      <input id="input_image" type="file" (change)="view()" style="display: none;"/>
+
     </div>
   </div>
-  <div style="height: 5%;display: flex;justify-content: space-around;">
-    <input style="height: 100%;" placeholder="请输入聊天:" [(ngModel)]="robotMessage"/>
-    <button mat-raised-button color="primary" (click)="onRobotSubmit()">发送</button>
-  </div>
-</div>
 
-<div id="platform">
+  <div [@openClose]="isShowRobot ? 'open' : 'closed'" class="robot-chat" id="robotDiv" style="display: none;">
+    <h3 style="color: brown; text-align: center;">欢迎进入机器人助手</h3>
+    <div style="display: flex;justify-content: center;margin-left: 5%;margin-right: 5%;">
+      <h4 style="text-align: center;align-items: center;">请选择你需要的机器人模型:</h4>
+      <mat-button-toggle-group #toggleBtn="matButtonToggleGroup" style="margin-left: auto;" [(ngModel)]="aiModel">
+        <mat-button-toggle value="moss">Moss</mat-button-toggle>
+        <mat-button-toggle value="gpt3.5">ChatGPT</mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
+    <div style="display: flex;height: 70%;overflow-y: scroll;">
+      <div class="chat-body">
+        <mat-nav-list style="width: 100%">
+          <mat-list-item *ngFor="let message of robotMessages; let i = index" style="height: max-content;">
+            <span matListItemLine>{{message.role}}--{{message.username}}   @{{message.time}}</span>
+            <span matListItemTitle *ngIf="message.type === 'text'" style="display:inline-block;word-wrap:break-word;white-space:normal;font-weight: bolder;">{{message.content}}</span>
+            <span matListItemTitle *ngIf="message.type === 'notification'">{{message.content}}</span>
+            <!-- 文字信息 -->
+          </mat-list-item>
+        </mat-nav-list>
+      </div>
+    </div>
+    <div style="height: 5%;display: flex;justify-content: space-around;">
+      <input style="height: 100%;" placeholder="请输入聊天:" [(ngModel)]="robotMessage"/>
+      <button mat-raised-button color="primary" (click)="onRobotSubmit()">发送</button>
+    </div>
+  </div>
+
+  <div id="platform">
+
+  </div>
 
 </div>

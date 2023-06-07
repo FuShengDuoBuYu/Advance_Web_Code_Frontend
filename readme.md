@@ -73,7 +73,6 @@
     │  │  app-routing.module.ts
     │  │  app.component.css
     │  │  app.component.html
-    │  │  app.component.spec.ts
     │  │  app.component.ts
     │  │  app.module.ts
     │  │  type.ts
@@ -99,25 +98,21 @@
     │  │  ├─index # 登录注册页面
     │  │  │      index.component.css
     │  │  │      index.component.html
-    │  │  │      index.component.spec.ts
     │  │  │      index.component.ts
     │  │  │
     │  │  ├─notfound  # 404页面
     │  │  │      notfound.component.css
     │  │  │      notfound.component.html
-    │  │  │      notfound.component.spec.ts
     │  │  │      notfound.component.ts
     │  │  │
     │  │  ├─personal-center # 个人中心页面
     │  │  │      personal-center.component.css
     │  │  │      personal-center.component.html
-    │  │  │      personal-center.component.spec.ts
     │  │  │      personal-center.component.ts
     │  │  │
     │  │  └─select-player # 选择角色页面
     │  │          select-player.component.css
     │  │          select-player.component.html
-    │  │          select-player.component.spec.ts
     │  │          select-player.component.ts
     │  │
     │  └─guard  # 路由守卫

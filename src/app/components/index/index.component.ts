@@ -19,12 +19,13 @@ export class IndexComponent {
   ngAfterViewInit() {
     document.title = "首页";
   }
-  
+
   constructor(private formBuilder: FormBuilder, public dialog: MatDialog,public http:HttpClient) {
     this.registrationForm = this.formBuilder.group({
       username: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       role: ['', [Validators.required]],
+      avatarBase64: [''],
     });
 
     this.loginForm = this.formBuilder.group({
@@ -43,6 +44,7 @@ export class IndexComponent {
 
       const api = environment.apiPrefix + "/user/register";
       this.http.post(api,this.registrationForm.value,httpOptions).subscribe((res:any) => {
+        console.log(res)
         if(res.success){
           alert(res.message+'请重新登录');
         }

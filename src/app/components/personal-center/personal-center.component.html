@@ -74,7 +74,7 @@
         <table *ngIf="showTable" class="personal-info-table">
           <tr>
             <th>姓名</th>
-            <td>{{ personalInfo?.name }}</td>
+            <td>{{ personalInfo?.user_name }}</td>
           </tr>
           <tr>
             <th>角色</th>
@@ -82,26 +82,33 @@
           </tr>
           <tr>
             <th>上次登录时间</th>
-            <td>{{ personalInfo?.login }}</td>
+            <td>{{ personalInfo?.last_login_time }}</td>
           </tr>
+<!--          <tr>-->
+<!--            <th>最喜欢的课程</th>-->
+<!--            <td>{{ personalInfo?.class }}</td>-->
+<!--          </tr>-->
           <tr>
-            <th>最喜欢的课程</th>
-            <td>{{ personalInfo?.class }}</td>
-          </tr>
-          <tr>
-            <th>学习时长/h</th>
-            <td>{{ personalInfo?.time }}</td>
+            <th>学习时长/s</th>
+            <td>{{ personalInfo?.total_duration }}</td>
           </tr>
           <tr>
             <th>发言总次数</th>
-            <td>{{ personalInfo?.number }}</td>
+            <td>{{ personalInfo?.total_chat_times }}</td>
           </tr>
           <tr>
             <th>最近发言</th>
-            <td>{{ personalInfo?.say }}</td>
+            <td>{{ personalInfo?.last_chat_message }}</td>
           </tr>
           <!-- 其他个人信息字段的行 -->
         </table>
+      </div>
+      <div *ngIf="showTable">
+        <img [src] = "personalInfo?.avatar==''?defaultAvatar:personalInfo?.avatar" class="avatar"/>
+      </div>
+      <div *ngIf="showTable" class="change-button">
+        <button mat-button color="primary" (click)="changePassword()">修改密码</button>
+        <button mat-button color="primary" (click)="changePersonInfo()">修改个人信息</button>
       </div>
     </div>
   </mat-drawer-content>

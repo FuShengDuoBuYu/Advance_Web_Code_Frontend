@@ -37,6 +37,8 @@ import {HttpClientModule,HttpClientJsonpModule} from '@angular/common/http';
 
 import { NgxEchartsModule } from 'ngx-echarts';
 import { MatSelectModule } from '@angular/material/select';
+import { ChangePasswordDialogComponent } from './components/change-password-dialog/change-password-dialog.component';
+import { ChangeUserinfoDialogComponent } from './components/change-userinfo-dialog/change-userinfo-dialog.component';
 
 
 
@@ -51,6 +53,8 @@ import { MatSelectModule } from '@angular/material/select';
     HomeComponent,
     SelectPlayerComponent,
     ClassroomComponent,
+    ChangePasswordDialogComponent,
+    ChangeUserinfoDialogComponent,
   ],
   imports: [
     BrowserModule,
@@ -88,8 +92,8 @@ import { MatSelectModule } from '@angular/material/select';
 export class AppModule { }
 export const environment = {
   production: false,
-  apiPrefix: 'http://106.14.140.55:10086',
-  socketPrefix: 'http://106.14.140.55:10088'
-  // apiPrefix: 'http://localhost:10086',
-  // socketPrefix: 'http://localhost:10088'
+  // apiPrefix: 'http://106.14.140.55:10086',
+  // socketPrefix: 'http://106.14.140.55:10088'
+  apiPrefix: 'http://localhost:10086',
+  socketPrefix: 'http://localhost:10088'
 };

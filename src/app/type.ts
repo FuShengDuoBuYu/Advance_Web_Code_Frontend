@@ -38,3 +38,12 @@ export type Cameras = {
   chat: THREE.Object3D;
 }
 
+export type userInfo = {
+  user_name: string;
+  role: number;
+  last_login_time: string;
+  total_chat_times: number;
+  last_chat_message: string;
+  total_duration: number;
+  avatar: string;
+}

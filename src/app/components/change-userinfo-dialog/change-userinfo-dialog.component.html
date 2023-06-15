@@ -1,0 +1,20 @@
+<h2 mat-dialog-title>修改个人信息</h2>
+<mat-dialog-content>
+  <form class="form" [formGroup]="form">
+    <mat-form-field appearance="fill" class="mat-form-field">
+      <mat-label>修改姓名</mat-label>
+      <input matInput formControlName="username">
+    </mat-form-field>
+  </form>
+  <div>
+    <img [src] = "data.avatar" class="avatar"/>
+    <div>
+      <button mat-button color="primary" (click)="onChooseImage()" class="image-button">修改图片</button>
+      <input id="input_image" type="file" (change)="view()" style="display: none;"/>
+    </div>
+  </div>
+  <div mat-dialog-actions class="change-password-button">
+    <button mat-raised-button mat-dialog-close>取消</button>
+    <button mat-raised-button color="primary" type="submit" cdkFocusInitial (click)="onSubmit()">提交</button>
+  </div>
+</mat-dialog-content>

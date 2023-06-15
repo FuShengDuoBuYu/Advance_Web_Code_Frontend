@@ -22,11 +22,23 @@
 
 .info{
   position: absolute;
-  top: 60px;
-  margin-left: 100px;
+  top: 80px;
+  margin-left: 160px;
   width: 800px;
   height: 600px;
   z-index: 1;
+}
+
+.avatar{
+  position: absolute;
+  top: 20px;
+  left: 10%;
+  width: 160px;
+  height: 160px;
+  z-index: 1;
+/*  圆形图形*/
+  border-radius: 50%;
+  overflow: hidden;
 }
 
 .show-chart {
@@ -35,6 +47,11 @@
 
 .show-content {
   display: block;
+}
+.change-button{
+  position: absolute;
+  top: 20px;
+  left: 70%;
 }
 
 .nav-style{
@@ -72,6 +89,9 @@ mat-drawer {
 }
 
 .personal-info-table {
+  position: absolute;
+  top: 100px;
+  left: 50px;
   width: 100%;
   font-size: 20px;
   font-style: normal;

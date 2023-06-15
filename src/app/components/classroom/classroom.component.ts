@@ -678,7 +678,7 @@ export class ClassroomComponent {
     this.renderer.setPixelRatio( window.devicePixelRatio );
     this.renderer.setSize( window.innerWidth, window.innerHeight );
     this.renderer.shadowMap.enabled = true;
-    this.controls = new OrbitControls( this.camera, this.renderer.domElement );
+    // this.controls = new OrbitControls( this.camera, this.renderer.domElement );
     platformDiv.appendChild( this.renderer.domElement );
 
     document.addEventListener( 'pointermove', this.onPointerMove.bind(this) );
@@ -1065,7 +1065,9 @@ class JoyStick{
       if ('ontouchstart' in window){
         this.domElement.addEventListener('touchstart', function(evt){ evt.preventDefault(); joystick.tap(evt); evt.stopPropagation();});
       }else{
-        this.domElement.addEventListener('mousedown', function(evt){ evt.preventDefault(); joystick.tap(evt); evt.stopPropagation();});
+        this.domElement.addEventListener('mousedown', function(evt){
+          console.log('mousedown')
+          evt.preventDefault(); joystick.tap(evt); evt.stopPropagation();});
       }
     }
   }

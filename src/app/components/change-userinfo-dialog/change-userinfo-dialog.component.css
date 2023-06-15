@@ -1,0 +1,28 @@
+.change-password-button{
+  display: flex;
+}
+
+.change-password-button button{
+  margin-left: 20px;
+  left: 70%;
+}
+
+.avatar{
+  width: 160px;
+  height: 160px;
+  z-index: 1;
+  /*  圆形图形*/
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.image-button{
+
+}
+
+.form{
+  width: 500px;
+  /*  垂直排列*/
+  display: flex;
+  flex-direction: column;
+}
